@@ -79,4 +79,8 @@ npm run typecheck
 - [`vendor/pi-fff/`](vendor/pi-fff/) contains FFF 0.11.0 with a patched `src/index.ts`.
 - [`eval/`](eval/) contains evaluation harnesses, protocols, and reports.
 
-The API integration follows the [System One API](https://docs.typesafe.ai/api.md) and [reranking cookbook](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md). Vendored code retains its upstream licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
+The API integration follows the [System One API](https://docs.typesafe.ai/api.md) and [reranking cookbook](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md).
+
+## License
+
+Original project code is licensed under the [MIT License](LICENSE). Third-party code and source excerpts retain their upstream licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).

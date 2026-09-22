@@ -18,4 +18,4 @@
 
 Coding task metadata comes from the official [SWE-bench Lite dataset](https://huggingface.co/datasets/princeton-nlp/SWE-bench_Lite). The upstream SWE-bench MIT notice is retained in `licenses/SWE-bench-MIT.txt`. Full repository archives, gold patches, test patches and generated workspaces remain local and are excluded from Git.
 
-These notices cover the third-party material identified above. They do not assign an open-source license to the new project code.
+Original project code is licensed under the [MIT License](LICENSE). The third-party material identified above retains its respective licenses and notices.
