@@ -1,0 +1,25 @@
+{
+  "name": "jev-search-pilot",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Experimental FFF reranking pilot. Not enabled in daily Pi.",
+  "scripts": {
+    "test": "node --import tsx --test test/*.test.ts eval/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "pilot": "node --import tsx eval/cli.ts"
+  },
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "0.85.1",
+    "@earendil-works/pi-tui": "0.85.1",
+    "@ff-labs/fff-node": "0.11.0",
+    "@ff-labs/fff-bun": "0.11.0",
+    "@sinclair/typebox": "0.34.48"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.4",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  },
+  "pi": { "extensions": ["./vendor/pi-fff/src/index.ts"] }
+}

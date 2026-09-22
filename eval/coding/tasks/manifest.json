@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "dataset": {
+    "id": "princeton-nlp/SWE-bench_Lite",
+    "config": "default",
+    "split": "test",
+    "official_parquet_url": "https://huggingface.co/datasets/princeton-nlp/SWE-bench_Lite/resolve/refs%2Fconvert%2Fparquet/default/test/0000.parquet",
+    "local_path": ".tmp/coding-tasks/SWE-bench_Lite-test.parquet",
+    "sha256": "7a21f37b8bc179c7db5beeb14e88ac538ba283455c776e6b2535bbfb6e3551b4",
+    "swe_bench_harness_source": {
+      "url": "https://github.com/SWE-bench/SWE-bench.git",
+      "commit": "02e7a74ffd0b707aab73d203fe87bdc7c76afc8e"
+    }
+  },
+  "isolation_contract": {
+    "agent_receives": [
+      "problem_statement",
+      "fresh extracted base_source_archive"
+    ],
+    "agent_must_not_receive": [
+      "official_gold_patch",
+      "official_test_patch",
+      "dataset-record.json",
+      "validation logs",
+      "git history"
+    ],
+    "verifier_order": [
+      "fresh base source",
+      "apply agent source diff while ignoring agent test edits",
+      "apply official_test_patch",
+      "run test_command with Docker network disabled"
+    ],
+    "notes": [
+      "The source archives contain no .git directory.",
+      "Gold and test artifacts are gitignored and outside model workspaces."
+    ]
+  },
+  "tasks": [
+    {
+      "instance_id": "sympy__sympy-19007",
+      "repo": "sympy/sympy",
+      "repo_url": "https://github.com/sympy/sympy.git",
+      "base_commit": "f9e030b57623bebdc2efa7f297c1b5ede08fcebf",
+      "environment_setup_commit": "28b41c73c12b70d6ad9f6e45109a80649c4456da",
+      "swe_bench_version": "1.6",
+      "created_at": "2020-03-29T13:47:11Z",
+      "problem_statement": "Wrong matrix element fetched from BlockMatrix\nGiven this code:\r\n```\r\nfrom sympy import *\r\nn, i = symbols('n, i', integer=True)\r\nA = MatrixSymbol('A', 1, 1)\r\nB = MatrixSymbol('B', n, 1)\r\nC = BlockMatrix([[A], [B]])\r\nprint('C is')\r\npprint(C)\r\nprint('C[i, 0] is')\r\npprint(C[i, 0])\r\n```\r\nI get this output:\r\n```\r\nC is\r\n⎡A⎤\r\n⎢ ⎥\r\n⎣B⎦\r\nC[i, 0] is\r\n(A)[i, 0]\r\n```\r\n`(A)[i, 0]` is the wrong here. `C[i, 0]` should not be simplified as that element may come from either `A` or `B`.\n",
+      "repository_breadth_at_base": {
+        "tracked_files": 1760,
+        "python_files": 1391,
+        "top_level_entries": 29,
+        "nested_directories": 202,
+        "count_command": "git -C .tmp/coding-tasks/repos/sympy ls-tree -r --name-only f9e030b57623bebdc2efa7f297c1b5ede08fcebf"
+      },
+      "base_source_archive": {
+        "path": ".tmp/coding-tasks/sources/sympy__sympy-19007.tar.gz",
+        "sha256": "03c97dad9f2405d4b954a27c601f1ce8f485f397ed9b90cd8272c04bd1d0f92c",
+        "workspace_prefix": "workspace/",
+        "generated_build_metadata": []
+      },
+      "workspace_setup_command": "mkdir -p \"$WORKSPACE\" && tar -xzf .tmp/coding-tasks/sources/sympy__sympy-19007.tar.gz --strip-components=1 -C \"$WORKSPACE\"",
+      "environment": {
+        "docker_image": "jev-coding-sympy:lite-py38",
+        "docker_image_id": "sha256:af1149c660822ba35073cf0f42840cda1b98c11636202b6fd3baef4b77a0209f",
+        "platform": "linux/arm64",
+        "python": "3.8.20",
+        "network_during_agent_and_test": "none"
+      },
+      "official_gold_patch": {
+        "path": ".tmp/coding-tasks/artifacts/sympy__sympy-19007/gold.patch",
+        "sha256": "38129c208a3166eb2b285ff3e2de46edfda395f5ee9d14b70ceb492797708741",
+        "visibility": "verifier-only"
+      },
+      "official_test_patch": {
+        "path": ".tmp/coding-tasks/artifacts/sympy__sympy-19007/test.patch",
+        "sha256": "8af98f1cfcd975a9344be6800115704d35d1fac6afcb253e0b41ea7342c0f620",
+        "visibility": "verifier-only"
+      },
+      "selected_FAIL_TO_PASS": [
+        "test_block_index_symbolic",
+        "test_block_index_symbolic_nonzero",
+        "test_block_index_large"
+      ],
+      "selected_PASS_TO_PASS": [
+        "test_block_index",
+        "test_slicing"
+      ],
+      "test_command": "python bin/test sympy/matrices/expressions/tests/test_indexing.py",
+      "docker_test_command_template": "docker run --rm --network none -v \"$WORKSPACE:/workspace\" -w /workspace jev-coding-sympy:lite-py38 sh -lc \"python bin/test sympy/matrices/expressions/tests/test_indexing.py\"",
+      "validation": {
+        "baseline": {
+          "expected": "fail",
+          "observed_exit_code": 1,
+          "seconds_wall_rounded": 3,
+          "log_path": ".tmp/coding-tasks/validation/sympy__sympy-19007/base.log"
+        },
+        "official_gold": {
+          "expected": "pass",
+          "observed_exit_code": 0,
+          "seconds_wall_rounded": 2,
+          "log_path": ".tmp/coding-tasks/validation/sympy__sympy-19007/gold.log"
+        }
+      }
+    },
+    {
+      "instance_id": "sympy__sympy-21379",
+      "repo": "sympy/sympy",
+      "repo_url": "https://github.com/sympy/sympy.git",
+      "base_commit": "624217179aaf8d094e6ff75b7493ad1ee47599b0",
+      "environment_setup_commit": "f9a6f50ec0c74d935c50a6e9c9b2cb0469570d91",
+      "swe_bench_version": "1.9",
+      "created_at": "2021-04-24T19:49:52Z",
+      "problem_statement": "Unexpected `PolynomialError` when using simple `subs()` for particular expressions\nI am seeing weird behavior with `subs` for particular expressions with hyperbolic sinusoids with piecewise arguments. When applying `subs`, I obtain an unexpected `PolynomialError`. For context, I was umbrella-applying a casting from int to float of all int atoms for a bunch of random expressions before using a tensorflow lambdify to avoid potential tensorflow type errors. You can pretend the expression below has a `+ 1` at the end, but below is the MWE that I could produce.\r\n\r\nSee the expression below, and the conditions in which the exception arises.\r\n\r\nSympy version: 1.8.dev\r\n\r\n```python\r\nfrom sympy import *\r\nfrom sympy.core.cache import clear_cache\r\n\r\nx, y, z = symbols('x y z')\r\n\r\nclear_cache()\r\nexpr = exp(sinh(Piecewise((x, y > x), (y, True)) / z))\r\n# This works fine\r\nexpr.subs({1: 1.0})\r\n\r\nclear_cache()\r\nx, y, z = symbols('x y z', real=True)\r\nexpr = exp(sinh(Piecewise((x, y > x), (y, True)) / z))\r\n# This fails with \"PolynomialError: Piecewise generators do not make sense\"\r\nexpr.subs({1: 1.0})  # error\r\n# Now run it again (isympy...) w/o clearing cache and everything works as expected without error\r\nexpr.subs({1: 1.0})\r\n```\r\n\r\nI am not really sure where the issue is, but I think it has something to do with the order of assumptions in this specific type of expression. Here is what I found-\r\n\r\n- The error only (AFAIK) happens with `cosh` or `tanh` in place of `sinh`, otherwise it succeeds\r\n- The error goes away if removing the division by `z`\r\n- The error goes away if removing `exp` (but stays for most unary functions, `sin`, `log`, etc.)\r\n- The error only happens with real symbols for `x` and `y` (`z` does not have to be real)\r\n\r\nNot too sure how to debug this one.\n",
+      "repository_breadth_at_base": {
+        "tracked_files": 1885,
+        "python_files": 1506,
+        "top_level_entries": 32,
+        "nested_directories": 211,
+        "count_command": "git -C .tmp/coding-tasks/repos/sympy ls-tree -r --name-only 624217179aaf8d094e6ff75b7493ad1ee47599b0"
+      },
+      "base_source_archive": {
+        "path": ".tmp/coding-tasks/sources/sympy__sympy-21379.tar.gz",
+        "sha256": "67a7a02e343d4d441f300ddede15b7a5e0903b3abbe235d86cfad3ff0f8843f0",
+        "workspace_prefix": "workspace/",
+        "generated_build_metadata": []
+      },
+      "workspace_setup_command": "mkdir -p \"$WORKSPACE\" && tar -xzf .tmp/coding-tasks/sources/sympy__sympy-21379.tar.gz --strip-components=1 -C \"$WORKSPACE\"",
+      "environment": {
+        "docker_image": "jev-coding-sympy:lite-py38",
+        "docker_image_id": "sha256:af1149c660822ba35073cf0f42840cda1b98c11636202b6fd3baef4b77a0209f",
+        "platform": "linux/arm64",
+        "python": "3.8.20",
+        "network_during_agent_and_test": "none"
+      },
+      "official_gold_patch": {
+        "path": ".tmp/coding-tasks/artifacts/sympy__sympy-21379/gold.patch",
+        "sha256": "471861242dd828605f96a8cf63411124cd1bb344a301d9f71bcf7806dc1e0baa",
+        "visibility": "verifier-only"
+      },
+      "official_test_patch": {
+        "path": ".tmp/coding-tasks/artifacts/sympy__sympy-21379/test.patch",
+        "sha256": "55c02d88fb2258f699b483fdd0474883c79c6b06d940ff4d2a92a8f743280738",
+        "visibility": "verifier-only"
+      },
+      "selected_FAIL_TO_PASS": [
+        "test_Mod"
+      ],
+      "selected_PASS_TO_PASS": [
+        "test_mod_pow",
+        "test_pow"
+      ],
+      "test_command": "python bin/test sympy/core/tests/test_arit.py",
+      "docker_test_command_template": "docker run --rm --network none -v \"$WORKSPACE:/workspace\" -w /workspace jev-coding-sympy:lite-py38 sh -lc \"python bin/test sympy/core/tests/test_arit.py\"",
+      "validation": {
+        "baseline": {
+          "expected": "fail",
+          "observed_exit_code": 1,
+          "seconds_wall_rounded": 5,
+          "log_path": ".tmp/coding-tasks/validation/sympy__sympy-21379/base.log"
+        },
+        "official_gold": {
+          "expected": "pass",
+          "observed_exit_code": 0,
+          "seconds_wall_rounded": 3,
+          "log_path": ".tmp/coding-tasks/validation/sympy__sympy-21379/gold.log"
+        }
+      }
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7220",
+      "repo": "pytest-dev/pytest",
+      "repo_url": "https://github.com/pytest-dev/pytest.git",
+      "base_commit": "56bf819c2f4eaf8b36bd8c42c06bb59d5a3bfc0f",
+      "environment_setup_commit": "678c1a0745f1cf175c442c719906a1f13e496910",
+      "swe_bench_version": "5.4",
+      "created_at": "2020-05-16T14:57:17Z",
+      "problem_statement": "Wrong path to test file when directory changed in fixture\nFiles are shown as relative to new directory when working directory is changed in a fixture. This makes it impossible to jump to the error as the editor is unaware of the directory change. The displayed directory should stay relative to the original directory.\r\n\r\ntest_path_error.py:\r\n```python\r\nimport os\r\nimport errno\r\nimport shutil\r\n\r\nimport pytest\r\n\r\n\r\n@pytest.fixture\r\ndef private_dir():  # or (monkeypatch)\r\n    out_dir = 'ddd'\r\n\r\n    try:\r\n        shutil.rmtree(out_dir)\r\n    except OSError as ex:\r\n        if ex.errno != errno.ENOENT:\r\n            raise\r\n    os.mkdir(out_dir)\r\n\r\n    old_dir = os.getcwd()\r\n    os.chdir(out_dir)\r\n    yield out_dir\r\n    os.chdir(old_dir)\r\n\r\n    # Same issue if using:\r\n    # monkeypatch.chdir(out_dir)\r\n\r\n\r\ndef test_show_wrong_path(private_dir):\r\n    assert False\r\n```\r\n\r\n```diff\r\n+ Expected: test_path_error.py:29: AssertionError\r\n- Displayed: ../test_path_error.py:29: AssertionError\r\n```\r\n\r\nThe full output is:\r\n```\r\n-*- mode: compilation; default-directory: \"~/src/pytest_path_error/\" -*-\r\nCompilation started at Fri Jan 10 00:05:52\r\n\r\nnox\r\nnox > Running session test\r\nnox > Creating virtual environment (virtualenv) using python3.7 in .nox/test\r\nnox > pip install pytest>=5.3\r\nnox > pip freeze\r\nattrs==19.3.0\r\nimportlib-metadata==1.3.0\r\nmore-itertools==8.0.2\r\npackaging==20.0\r\npluggy==0.13.1\r\npy==1.8.1\r\npyparsing==2.4.6\r\npytest==5.3.2\r\nsix==1.13.0\r\nwcwidth==0.1.8\r\nzipp==0.6.0\r\nnox > pytest \r\n================================= test session starts =================================\r\nplatform linux -- Python 3.7.5, pytest-5.3.2, py-1.8.1, pluggy-0.13.1\r\nrootdir: /home/lhn/src/pytest_path_error\r\ncollected 1 item                                                                      \r\n\r\ntest_path_error.py F                                                            [100%]\r\n\r\n====================================== FAILURES =======================================\r\n________________________________ test_show_wrong_path _________________________________\r\n\r\nprivate_dir = 'ddd'\r\n\r\n    def test_show_wrong_path(private_dir):\r\n>       assert False\r\nE       assert False\r\n\r\n../test_path_error.py:29: AssertionError\r\n================================== 1 failed in 0.03s ==================================\r\nnox > Command pytest  failed with exit code 1\r\nnox > Session test failed.\r\n\r\nCompilation exited abnormally with code 1 at Fri Jan 10 00:06:01\r\n```\r\n\r\nnoxfile.py:\r\n```python\r\nimport nox\r\n\r\n@nox.session(python='3.7')\r\ndef test(session):\r\n    session.install('pytest>=5.3')\r\n    session.run('pip', 'freeze')\r\n    session.run('pytest')\r\n```\n",
+      "repository_breadth_at_base": {
+        "tracked_files": 512,
+        "python_files": 209,
+        "top_level_entries": 29,
+        "nested_directories": 55,
+        "count_command": "git -C .tmp/coding-tasks/repos/pytest ls-tree -r --name-only 56bf819c2f4eaf8b36bd8c42c06bb59d5a3bfc0f"
+      },
+      "base_source_archive": {
+        "path": ".tmp/coding-tasks/sources/pytest-dev__pytest-7220.tar.gz",
+        "sha256": "17af2ba59460e8f39ac2eeb8a4cf580e14f81db1c1d5a5b7276b9493a13d4731",
+        "workspace_prefix": "workspace/",
+        "generated_build_metadata": [
+          "src/_pytest/_version.py (version = \"5.4.0\"; setuptools-scm build metadata only)"
+        ]
+      },
+      "workspace_setup_command": "mkdir -p \"$WORKSPACE\" && tar -xzf .tmp/coding-tasks/sources/pytest-dev__pytest-7220.tar.gz --strip-components=1 -C \"$WORKSPACE\"",
+      "environment": {
+        "docker_image": "jev-coding-pytest:lite-py38",
+        "docker_image_id": "sha256:b8cd01b7dc929ef92b99aa8875b4406191cb02469ed9b701a55c51e49f798790",
+        "platform": "linux/arm64",
+        "python": "3.8.20",
+        "network_during_agent_and_test": "none"
+      },
+      "official_gold_patch": {
+        "path": ".tmp/coding-tasks/artifacts/pytest-dev__pytest-7220/gold.patch",
+        "sha256": "a8ce7c334bfe6a30f80b6b547c9b1e3ead886b643bf9ab340f8165cd10bef878",
+        "visibility": "verifier-only"
+      },
+      "official_test_patch": {
+        "path": ".tmp/coding-tasks/artifacts/pytest-dev__pytest-7220/test.patch",
+        "sha256": "adc9066a2d467a6190edaf765b1843ed03011dacfd7bc48732cdfdf1e8d67760",
+        "visibility": "verifier-only"
+      },
+      "selected_FAIL_TO_PASS": [
+        "testing/test_nodes.py::test_failure_with_changed_cwd"
+      ],
+      "selected_PASS_TO_PASS": [
+        "testing/test_nodes.py::test_node_from_parent_disallowed_arguments",
+        "testing/test_nodes.py::test__check_initialpaths_for_relpath"
+      ],
+      "test_command": "PYTHONPATH=/workspace/src python -m pytest -q testing/test_nodes.py::test_failure_with_changed_cwd testing/test_nodes.py::test_node_from_parent_disallowed_arguments testing/test_nodes.py::test__check_initialpaths_for_relpath",
+      "docker_test_command_template": "docker run --rm --network none -v \"$WORKSPACE:/workspace\" -w /workspace jev-coding-pytest:lite-py38 sh -lc \"PYTHONPATH=/workspace/src python -m pytest -q testing/test_nodes.py::test_failure_with_changed_cwd testing/test_nodes.py::test_node_from_parent_disallowed_arguments testing/test_nodes.py::test__check_initialpaths_for_relpath\"",
+      "validation": {
+        "baseline": {
+          "expected": "fail",
+          "observed_exit_code": 1,
+          "seconds_wall_rounded": 1,
+          "log_path": ".tmp/coding-tasks/validation/pytest-dev__pytest-7220/base.log"
+        },
+        "official_gold": {
+          "expected": "pass",
+          "observed_exit_code": 0,
+          "seconds_wall_rounded": 1,
+          "log_path": ".tmp/coding-tasks/validation/pytest-dev__pytest-7220/gold.log"
+        }
+      }
+    },
+    {
+      "instance_id": "pytest-dev__pytest-7373",
+      "repo": "pytest-dev/pytest",
+      "repo_url": "https://github.com/pytest-dev/pytest.git",
+      "base_commit": "7b77fc086aab8b3a8ebc890200371884555eea1e",
+      "environment_setup_commit": "678c1a0745f1cf175c442c719906a1f13e496910",
+      "swe_bench_version": "5.4",
+      "created_at": "2020-06-15T17:12:08Z",
+      "problem_statement": "Incorrect caching of skipif/xfail string condition evaluation\nVersion: pytest 5.4.3, current master\r\n\r\npytest caches the evaluation of the string in e.g. `@pytest.mark.skipif(\"sys.platform == 'win32'\")`. The caching key is only the string itself (see `cached_eval` in `_pytest/mark/evaluate.py`). However, the evaluation also depends on the item's globals, so the caching can lead to incorrect results. Example:\r\n\r\n```py\r\n# test_module_1.py\r\nimport pytest\r\n\r\nskip = True\r\n\r\n@pytest.mark.skipif(\"skip\")\r\ndef test_should_skip():\r\n    assert False\r\n```\r\n\r\n```py\r\n# test_module_2.py\r\nimport pytest\r\n\r\nskip = False\r\n\r\n@pytest.mark.skipif(\"skip\")\r\ndef test_should_not_skip():\r\n    assert False\r\n```\r\n\r\nRunning `pytest test_module_1.py test_module_2.py`.\r\n\r\nExpected: `test_should_skip` is skipped, `test_should_not_skip` is not skipped.\r\n\r\nActual: both are skipped.\r\n\r\n---\r\n\r\nI think the most appropriate fix is to simply remove the caching, which I don't think is necessary really, and inline `cached_eval` into `MarkEvaluator._istrue`.\n",
+      "repository_breadth_at_base": {
+        "tracked_files": 533,
+        "python_files": 215,
+        "top_level_entries": 29,
+        "nested_directories": 52,
+        "count_command": "git -C .tmp/coding-tasks/repos/pytest ls-tree -r --name-only 7b77fc086aab8b3a8ebc890200371884555eea1e"
+      },
+      "base_source_archive": {
+        "path": ".tmp/coding-tasks/sources/pytest-dev__pytest-7373.tar.gz",
+        "sha256": "2226bba7ef639f4aae364fbabab58ef120fba97e433d881039d5cb53882adef6",
+        "workspace_prefix": "workspace/",
+        "generated_build_metadata": [
+          "src/_pytest/_version.py (version = \"5.4.0\"; setuptools-scm build metadata only)"
+        ]
+      },
+      "workspace_setup_command": "mkdir -p \"$WORKSPACE\" && tar -xzf .tmp/coding-tasks/sources/pytest-dev__pytest-7373.tar.gz --strip-components=1 -C \"$WORKSPACE\"",
+      "environment": {
+        "docker_image": "jev-coding-pytest:lite-py38",
+        "docker_image_id": "sha256:b8cd01b7dc929ef92b99aa8875b4406191cb02469ed9b701a55c51e49f798790",
+        "platform": "linux/arm64",
+        "python": "3.8.20",
+        "network_during_agent_and_test": "none"
+      },
+      "official_gold_patch": {
+        "path": ".tmp/coding-tasks/artifacts/pytest-dev__pytest-7373/gold.patch",
+        "sha256": "1bba788edb0fbb9bdc5dbfe0b0bc0010211897a71d4a495b357ce73f4fef67ab",
+        "visibility": "verifier-only"
+      },
+      "official_test_patch": {
+        "path": ".tmp/coding-tasks/artifacts/pytest-dev__pytest-7373/test.patch",
+        "sha256": "719fb3fae7ff7c462720a835a75f832c88065202953d4db1ced554f3ee94c519",
+        "visibility": "verifier-only"
+      },
+      "selected_FAIL_TO_PASS": [
+        "testing/test_mark.py::TestFunctional::test_reevaluate_dynamic_expr"
+      ],
+      "selected_PASS_TO_PASS": [
+        "testing/test_mark.py::TestFunctional::test_mark_closest",
+        "testing/test_mark.py::TestFunctional::test_mark_dynamically_in_funcarg"
+      ],
+      "test_command": "PYTHONPATH=/workspace/src python -m pytest -q testing/test_mark.py::TestFunctional::test_reevaluate_dynamic_expr testing/test_mark.py::TestFunctional::test_mark_closest testing/test_mark.py::TestFunctional::test_mark_dynamically_in_funcarg",
+      "docker_test_command_template": "docker run --rm --network none -v \"$WORKSPACE:/workspace\" -w /workspace jev-coding-pytest:lite-py38 sh -lc \"PYTHONPATH=/workspace/src python -m pytest -q testing/test_mark.py::TestFunctional::test_reevaluate_dynamic_expr testing/test_mark.py::TestFunctional::test_mark_closest testing/test_mark.py::TestFunctional::test_mark_dynamically_in_funcarg\"",
+      "validation": {
+        "baseline": {
+          "expected": "fail",
+          "observed_exit_code": 1,
+          "seconds_wall_rounded": 1,
+          "log_path": ".tmp/coding-tasks/validation/pytest-dev__pytest-7373/base.log"
+        },
+        "official_gold": {
+          "expected": "pass",
+          "observed_exit_code": 0,
+          "seconds_wall_rounded": 1,
+          "log_path": ".tmp/coding-tasks/validation/pytest-dev__pytest-7373/gold.log"
+        }
+      }
+    },
+    {
+      "instance_id": "psf__requests-3362",
+      "repo": "psf/requests",
+      "repo_url": "https://github.com/psf/requests.git",
+      "base_commit": "36453b95b13079296776d11b09cab2567ea3e703",
+      "environment_setup_commit": "36453b95b13079296776d11b09cab2567ea3e703",
+      "swe_bench_version": "2.10",
+      "created_at": "2016-06-24T13:31:31Z",
+      "problem_statement": "Uncertain about content/text vs iter_content(decode_unicode=True/False)\nWhen requesting an application/json document, I'm seeing `next(r.iter_content(16*1024, decode_unicode=True))` returning bytes, whereas `r.text` returns unicode. My understanding was that both should return a unicode object. In essence, I thought \"iter_content\" was equivalent to \"iter_text\" when decode_unicode was True. Have I misunderstood something? I can provide an example if needed.\n\nFor reference, I'm using python 3.5.1 and requests 2.10.0.\n\nThanks!\n\n",
+      "repository_breadth_at_base": {
+        "tracked_files": 140,
+        "python_files": 98,
+        "top_level_entries": 16,
+        "nested_directories": 15,
+        "count_command": "git -C .tmp/coding-tasks/repos/requests ls-tree -r --name-only 36453b95b13079296776d11b09cab2567ea3e703"
+      },
+      "base_source_archive": {
+        "path": ".tmp/coding-tasks/sources/psf__requests-3362.tar.gz",
+        "sha256": "64423f23b45bdd7f60141bf5f6c8a1fc2318c9c63d5cad4a50aa8308bb904690",
+        "workspace_prefix": "workspace/",
+        "generated_build_metadata": []
+      },
+      "workspace_setup_command": "mkdir -p \"$WORKSPACE\" && tar -xzf .tmp/coding-tasks/sources/psf__requests-3362.tar.gz --strip-components=1 -C \"$WORKSPACE\"",
+      "environment": {
+        "docker_image": "jev-coding-requests:lite-py38",
+        "docker_image_id": "sha256:e35a0850a4f4bdc051a15cafdc9ac1e9f83a990ecdcd36c936407a6f77cf7e19",
+        "platform": "linux/arm64",
+        "python": "3.8.20",
+        "network_during_agent_and_test": "none"
+      },
+      "official_gold_patch": {
+        "path": ".tmp/coding-tasks/artifacts/psf__requests-3362/gold.patch",
+        "sha256": "23e64f2da841d5d49874221e915a084e9bb1def2fcd6d6a24fd8e7dce71fba8d",
+        "visibility": "verifier-only"
+      },
+      "official_test_patch": {
+        "path": ".tmp/coding-tasks/artifacts/psf__requests-3362/test.patch",
+        "sha256": "cbb63761e0d50033c347fb0847126632ba4c8848db8bd7f598e21d3998d5c260",
+        "visibility": "verifier-only"
+      },
+      "selected_FAIL_TO_PASS": [
+        "tests/test_requests.py::TestRequests::test_response_decode_unicode"
+      ],
+      "selected_PASS_TO_PASS": [
+        "tests/test_requests.py::TestRequests::test_entry_points",
+        "tests/test_requests.py::TestRequests::test_basic_building"
+      ],
+      "test_command": "python -m pytest -q tests/test_requests.py::TestRequests::test_response_decode_unicode tests/test_requests.py::TestRequests::test_entry_points tests/test_requests.py::TestRequests::test_basic_building",
+      "docker_test_command_template": "docker run --rm --network none -v \"$WORKSPACE:/workspace\" -w /workspace jev-coding-requests:lite-py38 sh -lc \"python -m pytest -q tests/test_requests.py::TestRequests::test_response_decode_unicode tests/test_requests.py::TestRequests::test_entry_points tests/test_requests.py::TestRequests::test_basic_building\"",
+      "validation": {
+        "baseline": {
+          "expected": "fail",
+          "observed_exit_code": 1,
+          "seconds_wall_rounded": 1,
+          "log_path": ".tmp/coding-tasks/validation/psf__requests-3362/base.log"
+        },
+        "official_gold": {
+          "expected": "pass",
+          "observed_exit_code": 0,
+          "seconds_wall_rounded": 1,
+          "log_path": ".tmp/coding-tasks/validation/psf__requests-3362/gold.log"
+        }
+      }
+    }
+  ]
+}

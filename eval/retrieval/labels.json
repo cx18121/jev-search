@@ -1,0 +1,1305 @@
+{
+  "datasetSha256": "b00fbfb2bf986edc94474defd8f0db7cb4d5a2cf940c7cb1f6932bd93abbf221",
+  "byQuery": {
+    "req-redirect-auth-strip": [
+      {
+        "candidateId": "c_03bb5717d71f4235",
+        "label": "useful",
+        "reason": "Shows the exact decision in sessions.py rebuild_auth body: hostname comparison gates del headers['Authorization'], plus netrc reapply via get_netrc_auth/trust_env."
+      },
+      {
+        "candidateId": "c_11c75e860ab880c3",
+        "label": "not_useful",
+        "reason": "urllib3 NTLM pool setting up an Authorization request header name; nothing about redirects or stripping auth on host change."
+      },
+      {
+        "candidateId": "c_197486d76a6a8770",
+        "label": "not_useful",
+        "reason": "HTTPBasicAuth.__call__ sets the Authorization header; shows adding auth, not the redirect-time decision to drop it."
+      },
+      {
+        "candidateId": "c_2a1d4ee8f3265dbe",
+        "label": "not_useful",
+        "reason": "HTTPProxyAuth sets Proxy-Authorization; unrelated header and no redirect logic."
+      },
+      {
+        "candidateId": "c_3fb1acfe6c662c4c",
+        "label": "not_useful",
+        "reason": "Deletes Proxy-Authorization during proxy rebuild; different header and different decision than dropping Authorization on host change."
+      },
+      {
+        "candidateId": "c_665e0dd1f0433500",
+        "label": "not_useful",
+        "reason": "Digest auth 401 handling sets Authorization on a retried request; not the redirect host-change strip decision."
+      },
+      {
+        "candidateId": "c_aa4c3ba0cf47e7e3",
+        "label": "not_useful",
+        "reason": "rebuild_proxies docstring about replacing Proxy-Authorization; does not address dropping Authorization on cross-host redirect."
+      },
+      {
+        "candidateId": "c_abe5c9b10f1c6cc8",
+        "label": "useful",
+        "reason": "sessions.py: 'if Authorization in headers' with comment 'If we get redirected to a new host, we should strip out any authentication headers' and parsing of the original request URL - directly evidences where/why the drop decision happens (the del itself is just below the window)."
+      },
+      {
+        "candidateId": "c_adf03def6a5b46c0",
+        "label": "not_useful",
+        "reason": "Same Proxy-Authorization deletion region; not the Authorization-on-host-change decision."
+      },
+      {
+        "candidateId": "c_b746ffa4e8ed8fd7",
+        "label": "not_useful",
+        "reason": "Digest auth nonce shortcut setting Authorization; unrelated to redirect stripping."
+      },
+      {
+        "candidateId": "c_bc5668e93b086ec3",
+        "label": "not_useful",
+        "reason": "adapters.py builds Proxy-Authorization from proxy URL credentials; unrelated."
+      },
+      {
+        "candidateId": "c_cb21c4e47d512696",
+        "label": "not_useful",
+        "reason": "Sets Proxy-Authorization in rebuild_proxies; different header, no drop-on-host-change fact."
+      }
+    ],
+    "req-redirect-limit": [
+      {
+        "candidateId": "c_09185edca63512b7",
+        "label": "useful",
+        "reason": "Session.__init__ sets self.max_redirects = DEFAULT_REDIRECT_LIMIT with comment stating the default is 30 and that TooManyRedirects is raised past the limit - gives the default value fact."
+      },
+      {
+        "candidateId": "c_1b6cea8ce3e269d1",
+        "label": "not_useful",
+        "reason": "__attrs__ list merely names 'max_redirects'; no default value and no enforcement."
+      },
+      {
+        "candidateId": "c_6884baae5c29c1e8",
+        "label": "useful",
+        "reason": "resolve_redirects enforcement: raises TooManyRedirects when i >= self.max_redirects - the exact place the limit is enforced."
+      },
+      {
+        "candidateId": "c_6e125237f1d756a7",
+        "label": "useful",
+        "reason": "Overlapping snippet of the same enforcement: if i >= self.max_redirects raise TooManyRedirects."
+      }
+    ],
+    "req-apparent-encoding-ctrl": [
+      {
+        "candidateId": "c_58c5a6da1cd7200a",
+        "label": "useful",
+        "reason": "The definition itself: @property apparent_encoding in models.py returning chardet.detect(self.content)['encoding'] - answers both location and delegated library (chardet)."
+      }
+    ],
+    "pytest-collect-file-patterns": [
+      {
+        "candidateId": "c_0441572c28c55ed3",
+        "label": "useful",
+        "reason": "Package collection gating __init__.py Module creation on path_matches_patterns(init_module, config.getini('python_files')) - concrete evidence that python_files glob matching decides module collection."
+      },
+      {
+        "candidateId": "c_6704380b203091e0",
+        "label": "useful",
+        "reason": "Source comment states a lone __init__.py 'gets ignored by the default python_files option' - names the specific ini option that gates .py collection, though the deciding code itself is elsewhere."
+      },
+      {
+        "candidateId": "c_9ac70f669bd2399c",
+        "label": "not_useful",
+        "reason": "AssertionRewritingHook reading python_files as fnpats is the assertion-rewrite selection, not the test-module collection decision."
+      },
+      {
+        "candidateId": "c_9f0b873fdcb0afb7",
+        "label": "useful",
+        "reason": "parser.addini('python_files', default=['test_*.py','*_test.py']) - the ini patterns and defaults the collection decision matches against."
+      },
+      {
+        "candidateId": "c_c7e9bb575a6b308c",
+        "label": "useful",
+        "reason": "The core gate in pytest_collect_file: for ext=='.py', non-initpath files must satisfy path_matches_patterns(python_files + ['__init__.py']) or collection returns; then makemodule hook is invoked."
+      }
+    ],
+    "pytest-maxfail-stop": [
+      {
+        "candidateId": "c_08f1f7694786f432",
+        "label": "useful",
+        "reason": "pytest_runtest_logreport: increments testsfailed and sets self.shouldfail when testsfailed >= maxfail - the core stop-after-N-failures logic."
+      },
+      {
+        "candidateId": "c_74154b56e2eabcd5",
+        "label": "useful",
+        "reason": "Shows the --maxfail option definition (action=store, type=int) in main.py - where the limit option is declared (dest/default just below the window)."
+      },
+      {
+        "candidateId": "c_bd761c799238dfe1",
+        "label": "useful",
+        "reason": "-x/--exitfirst defined as store_const dest='maxfail' const=1 - shows -x is maxfail=1."
+      },
+      {
+        "candidateId": "c_d06a5dfe5038ba38",
+        "label": "useful",
+        "reason": "--maxfail dest='maxfail' default=0 'exit after first num failures or errors' - option semantics and default."
+      },
+      {
+        "candidateId": "c_ddbea2c3cb5c8dff",
+        "label": "useful",
+        "reason": "Overlapping enforcement snippet: shouldfail set when testsfailed >= maxfail, plus pytest_collectreport aliased to the same handler."
+      }
+    ],
+    "pytest-lastfailed-storage": [
+      {
+        "candidateId": "c_0dfccce21cbbb5ce",
+        "label": "useful",
+        "reason": "LFPlugin collect-report path recording failures: self.lastfailed[report.nodeid] = True (and expanding a passed collector's children) - shows where failed nodeids are recorded."
+      },
+      {
+        "candidateId": "c_28eeda0366ba66f2",
+        "label": "not_useful",
+        "reason": "stepwise.py plugin (--sw): its own lastfailed scan of items; different feature and different cache key than --lf."
+      },
+      {
+        "candidateId": "c_49193b978a893341",
+        "label": "not_useful",
+        "reason": "get_last_failed_paths derives paths from self.lastfailed; consumes the data but shows neither the recording nor the persistence."
+      },
+      {
+        "candidateId": "c_51e3a12cfb3efbaf",
+        "label": "not_useful",
+        "reason": "Report-status message counting known failures; no recording or persistence."
+      },
+      {
+        "candidateId": "c_52801427744cab5c",
+        "label": "useful",
+        "reason": "LFPlugin.__init__ loading the dict: self.lastfailed = config.cache.get('cache/lastfailed', {}) - shows the cache key where the failed-test data lives."
+      },
+      {
+        "candidateId": "c_57112d6a4077bf32",
+        "label": "not_useful",
+        "reason": "stepwise plugin status message; unrelated to --lf storage."
+      },
+      {
+        "candidateId": "c_6e22aa46e2ed7fc2",
+        "label": "useful",
+        "reason": "Collect-report outcome handling updating self.lastfailed (pop passed, mark failed True) - recording mechanism."
+      },
+      {
+        "candidateId": "c_72f3ddc911a93cd9",
+        "label": "useful",
+        "reason": "Persistence: config.cache.set('cache/lastfailed', self.lastfailed) when changed - where the data is written back."
+      },
+      {
+        "candidateId": "c_7d1bab73442a357a",
+        "label": "useful",
+        "reason": "Overlapping persistence snippet: cache.get/cache.set of 'cache/lastfailed'."
+      },
+      {
+        "candidateId": "c_7e9ef01d778fcd97",
+        "label": "not_useful",
+        "reason": "LFPluginCollWrapper filtering collection by known failures - rerun selection, not where failures are recorded/persisted."
+      },
+      {
+        "candidateId": "c_8881310f1c70325d",
+        "label": "not_useful",
+        "reason": "pytest_collection_modifyitems partitioning items by lastfailed - usage during rerun, not recording/persistence."
+      },
+      {
+        "candidateId": "c_94325d70043d0a01",
+        "label": "not_useful",
+        "reason": "stepwise.py records its own lastfailed nodeid and stops the session - --sw feature, not --lf storage."
+      },
+      {
+        "candidateId": "c_a546268cb2088ba3",
+        "label": "not_useful",
+        "reason": "stepwise.py clearing its lastfailed on pass; different plugin/cache key."
+      },
+      {
+        "candidateId": "c_a68eab6c9e71ad07",
+        "label": "not_useful",
+        "reason": "Overlapping stepwise snippet; not the --lf mechanism."
+      },
+      {
+        "candidateId": "c_b2b84fa9ee0d12a3",
+        "label": "useful",
+        "reason": "LFPlugin init with active_keys ('lf','failedfirst') visible plus self.lastfailed = config.cache.get('cache/lastfailed', {}) - ties the --lf option to the cache key where data lives."
+      },
+      {
+        "candidateId": "c_b37b6b31c6bc0a10",
+        "label": "not_useful",
+        "reason": "stepwise pytest_sessionfinish persists to 'cache/stepwise' - different cache key/feature than --lf."
+      },
+      {
+        "candidateId": "c_b83bb3bf97298b00",
+        "label": "not_useful",
+        "reason": "stepwise skip-handling clearing its lastfailed; unrelated plugin."
+      },
+      {
+        "candidateId": "c_bc787a65439393a6",
+        "label": "useful",
+        "reason": "pytest_collectreport in LFPlugin: outcome check and lastfailed update including the failed branch - recording of collection failures."
+      },
+      {
+        "candidateId": "c_bd6365d9dacb97c1",
+        "label": "not_useful",
+        "reason": "Collection filter keeping items whose nodeid is in lastfailed - consumption, not storage."
+      },
+      {
+        "candidateId": "c_be90709fa615916a",
+        "label": "not_useful",
+        "reason": "modifyitems entry partitioning by lastfailed - rerun selection, not storage."
+      },
+      {
+        "candidateId": "c_c112bae7f08580ee",
+        "label": "useful",
+        "reason": "Core recording: pytest_runtest_logreport pops passing/skipped nodeids and sets lastfailed[nodeid]=True on failure."
+      },
+      {
+        "candidateId": "c_c23c47478bf961b9",
+        "label": "useful",
+        "reason": "Persistence in pytest_sessionfinish: compares saved cache value and config.cache.set('cache/lastfailed', ...)."
+      },
+      {
+        "candidateId": "c_c4e93f5d1ff324ca",
+        "label": "useful",
+        "reason": "Overlapping logreport recording snippet plus start of pytest_collectreport."
+      },
+      {
+        "candidateId": "c_d420e572195505d0",
+        "label": "not_useful",
+        "reason": "stepwise init loading 'cache/stepwise' - different feature/key than cache/lastfailed."
+      },
+      {
+        "candidateId": "c_d4a8f438afa5c446",
+        "label": "not_useful",
+        "reason": "Wrapper reading self.lfplugin.lastfailed for collection filtering; no recording or persistence shown."
+      },
+      {
+        "candidateId": "c_daba4b309fd6c1ec",
+        "label": "useful",
+        "reason": "Overlapping collect-report recording snippet: pop passed, set failed nodeids True."
+      },
+      {
+        "candidateId": "c_de103df1fcf6e4d3",
+        "label": "not_useful",
+        "reason": "stepwise skip logic; unrelated to --lf storage."
+      }
+    ],
+    "pytest-assert-rewrite-choice": [
+      {
+        "candidateId": "c_0dfb7d87cb755d50",
+        "label": "useful",
+        "reason": "Hook __init__ state: _basenames_to_check_rewrite = {'conftest'} and _marked_for_rewrite_cache - shows conftest is by default in the set of basenames checked for rewriting."
+      },
+      {
+        "candidateId": "c_147595737b85a43a",
+        "label": "useful",
+        "reason": "_early_rewrite_bailout body: command-line path basenames added, 'conftest already by default', and bail-out skipped when module basename is in the check set - part of the module-selection decision."
+      },
+      {
+        "candidateId": "c_15e3308bc0b72034",
+        "label": "not_useful",
+        "reason": "--assert option help text about rewrite mode being default; concerns whether rewriting is enabled at all, not which modules are selected."
+      },
+      {
+        "candidateId": "c_169bf7d816b025fe",
+        "label": "not_useful",
+        "reason": "AssertionRewriter.run rewriting mechanics; not module selection."
+      },
+      {
+        "candidateId": "c_1869e1296f8eda87",
+        "label": "not_useful",
+        "reason": "runtest-protocol docstring about assertrepr hooks; unrelated to module selection."
+      },
+      {
+        "candidateId": "c_1e9d5da1cd5e7af8",
+        "label": "not_useful",
+        "reason": "Explanation formatting under rewrite mode; not module selection."
+      },
+      {
+        "candidateId": "c_1ed0fed9d5d5b6d5",
+        "label": "useful",
+        "reason": "find_spec preconditions: only SourceFileLoader-loaded, existing source files can be rewritten - concrete constraints on which modules get rewriting."
+      },
+      {
+        "candidateId": "c_200b88f7dec524df",
+        "label": "not_useful",
+        "reason": "install_importhook inserting the hook into sys.meta_path - installation plumbing, not the per-module decision."
+      },
+      {
+        "candidateId": "c_22a48e332f7eccca",
+        "label": "useful",
+        "reason": "_should_rewrite's final fallback 'return self._is_marked_for_rewrite(name, state)' plus start of that helper - the explicit-registration branch of the decision."
+      },
+      {
+        "candidateId": "c_22b18acfa7ceeaa7",
+        "label": "not_useful",
+        "reason": "Same install_importhook region; installation, not selection."
+      },
+      {
+        "candidateId": "c_278ab8d452274f8a",
+        "label": "not_useful",
+        "reason": "_rewrite_test parsing/compiling - rewriting mechanics after the decision."
+      },
+      {
+        "candidateId": "c_284270e4f4fd409d",
+        "label": "useful",
+        "reason": "mark_rewrite docstring: 'Mark import names as needing to be rewritten... named module or package as well as any nested modules' - the explicit registration criterion."
+      },
+      {
+        "candidateId": "c_2bc8ff336911a25f",
+        "label": "not_useful",
+        "reason": "AssertionState init; no selection logic."
+      },
+      {
+        "candidateId": "c_38389f3bd29ff3da",
+        "label": "not_useful",
+        "reason": "--assert option choices/default; mode selection, not module selection."
+      },
+      {
+        "candidateId": "c_389f620fcc78cee4",
+        "label": "not_useful",
+        "reason": "Comment 'the requested module looks like a test file, so rewrite it' in exec path - vague restatement after the decision; no criterion or mechanism visible."
+      },
+      {
+        "candidateId": "c_3b83e1f7bbb190ea",
+        "label": "not_useful",
+        "reason": "visit_Assert tuple-warning mechanics; not selection."
+      },
+      {
+        "candidateId": "c_3ccb715880609921",
+        "label": "useful",
+        "reason": "mark_rewrite tail: self._must_rewrite.update(names) and cache clear - shows how registered names enter the decision state."
+      },
+      {
+        "candidateId": "c_4106e41193a435e5",
+        "label": "not_useful",
+        "reason": "TerminalReporter.rewrite (cursor rewind) - homonym, unrelated."
+      },
+      {
+        "candidateId": "c_413c504d5650fa4b",
+        "label": "not_useful",
+        "reason": "rewrite_asserts signature - mechanics, not selection."
+      },
+      {
+        "candidateId": "c_4663ab388951e81f",
+        "label": "not_useful",
+        "reason": "install_importhook plumbing."
+      },
+      {
+        "candidateId": "c_46f840d0718ad08b",
+        "label": "not_useful",
+        "reason": "visit_Assert docstring about how asserts are transformed; not which modules."
+      },
+      {
+        "candidateId": "c_495d41450b631df6",
+        "label": "useful",
+        "reason": "_is_marked_for_rewrite negative-cache branch plus mark_rewrite def - part of the registered-names decision path."
+      },
+      {
+        "candidateId": "c_4bb5435a10930758",
+        "label": "not_useful",
+        "reason": "_warn_already_imported import lines; warning plumbing."
+      },
+      {
+        "candidateId": "c_4c8a0336116f3f85",
+        "label": "useful",
+        "reason": "_is_marked_for_rewrite core: cache lookup then scan of _must_rewrite - decision logic for explicitly registered modules."
+      },
+      {
+        "candidateId": "c_4dd70902ade2dbff",
+        "label": "useful",
+        "reason": "mark_rewrite updating _must_rewrite and clearing the cache - registration feeding the decision."
+      },
+      {
+        "candidateId": "c_50993440f42960b1",
+        "label": "not_useful",
+        "reason": "rewrite_asserts body invoking AssertionRewriter - mechanics."
+      },
+      {
+        "candidateId": "c_55a810edf03e84d6",
+        "label": "useful",
+        "reason": "_early_rewrite_bailout tail: fnmatch_ex(pat, path) and _is_marked_for_rewrite checks decide against early skip, else 'early skip of rewriting module' - direct selection logic."
+      },
+      {
+        "candidateId": "c_58c5d0df2dadf064",
+        "label": "useful",
+        "reason": "find_spec gate: 'if not self._should_rewrite(name, fn, state): return None' - shows _should_rewrite is the decision point for applying rewriting."
+      },
+      {
+        "candidateId": "c_5d364da378e26175",
+        "label": "not_useful",
+        "reason": "DummyRewriteHook no-op; fallback plumbing."
+      },
+      {
+        "candidateId": "c_5d43b07fcf8e5739",
+        "label": "useful",
+        "reason": "Hook __init__ showing fnpats fallback ['test_*.py','*_test.py'] and _must_rewrite set - the pattern inputs used by the selection."
+      },
+      {
+        "candidateId": "c_66345f30bd2b763c",
+        "label": "not_useful",
+        "reason": "Loop locating the AssertionRewritingHook in sys.meta_path (enclosing function name not visible); plumbing without a selection fact."
+      },
+      {
+        "candidateId": "c_6b0d3713819f6d88",
+        "label": "not_useful",
+        "reason": "_rewrite_test def - mechanics."
+      },
+      {
+        "candidateId": "c_6d30c3a5bda98d43",
+        "label": "not_useful",
+        "reason": "Terminal progress rewrite - homonym, unrelated."
+      },
+      {
+        "candidateId": "c_6e07c9eb1451afa9",
+        "label": "useful",
+        "reason": "_should_rewrite head: 'always rewrite conftest files' with basename check - a core selection rule."
+      },
+      {
+        "candidateId": "c_72486ee386cab275",
+        "label": "not_useful",
+        "reason": "AST import aliases inserted during rewriting - mechanics."
+      },
+      {
+        "candidateId": "c_76967bd251fbd380",
+        "label": "not_useful",
+        "reason": "AssertionRewritingHook class def/docstring identifies the hook but shows no selection criteria."
+      },
+      {
+        "candidateId": "c_7f1d2e193dd1d71d",
+        "label": "not_useful",
+        "reason": "importhook.mark_rewrite(*names) call and DummyRewriteHook without the enclosing register_assert_rewrite definition visible; plumbing fragment."
+      },
+      {
+        "candidateId": "c_7fc8986ab0c5d54c",
+        "label": "not_useful",
+        "reason": "visit_Assert internals - mechanics."
+      },
+      {
+        "candidateId": "c_810e8879cad22f95",
+        "label": "not_useful",
+        "reason": "Imports only."
+      },
+      {
+        "candidateId": "c_82d86b44dab47af6",
+        "label": "not_useful",
+        "reason": "install_importhook plumbing."
+      },
+      {
+        "candidateId": "c_892c3785e9f3b2fc",
+        "label": "useful",
+        "reason": "_should_rewrite definition with the conftest.py always-rewrite branch (and the preceding early-skip trace) - core decision code."
+      },
+      {
+        "candidateId": "c_8de17ad3019a18b4",
+        "label": "useful",
+        "reason": "_is_marked_for_rewrite matching name == marked or name.startswith(marked + '.') - the registered-module matching rule."
+      },
+      {
+        "candidateId": "c_8eb2ec6e38f7f281",
+        "label": "not_useful",
+        "reason": "_rewrite_test def - mechanics."
+      },
+      {
+        "candidateId": "c_910fbf82c66a5798",
+        "label": "not_useful",
+        "reason": "Always-true-assert warning - mechanics."
+      },
+      {
+        "candidateId": "c_9491178101388f17",
+        "label": "not_useful",
+        "reason": "mark_rewrite call + DummyRewriteHook fallback without visible register_assert_rewrite context; plumbing."
+      },
+      {
+        "candidateId": "c_9532200128d57873",
+        "label": "not_useful",
+        "reason": "PytestAssertRewriteWarning class - unrelated to selection."
+      },
+      {
+        "candidateId": "c_95535c388c3a6469",
+        "label": "useful",
+        "reason": "is_rewrite_disabled: 'PYTEST_DONT_REWRITE' in docstring - the per-module opt-out that decides a module is not rewritten."
+      },
+      {
+        "candidateId": "c_9cef562bad334ecc",
+        "label": "useful",
+        "reason": "_early_rewrite_bailout adding initial (command-line) path basenames to the check set - initial-path input to the decision."
+      },
+      {
+        "candidateId": "c_9e938966d67220d3",
+        "label": "useful",
+        "reason": "_is_marked_for_rewrite caching a positive match ('matched marked file') - decision outcome for registered names."
+      },
+      {
+        "candidateId": "c_a0994a3434d8f68c",
+        "label": "useful",
+        "reason": "return self._is_marked_for_rewrite(...) fallback of _should_rewrite plus helper def - decision structure."
+      },
+      {
+        "candidateId": "c_a5c6c724adbaa6a3",
+        "label": "not_useful",
+        "reason": "AssertionRewriter docstring on transforming asserts - mechanics."
+      },
+      {
+        "candidateId": "c_a61427037a8786aa",
+        "label": "useful",
+        "reason": "find_spec preconditions: namespace origin / non-source loader / missing file cannot be rewritten - selection constraints."
+      },
+      {
+        "candidateId": "c_ac041051d7b33f52",
+        "label": "useful",
+        "reason": "find_module/find_spec entry: _writing_pyc guard and 'if self._early_rewrite_bailout(name, state): return None' - shows the hook skips modules via the bailout decision."
+      },
+      {
+        "candidateId": "c_ac4fab872443ba2d",
+        "label": "not_useful",
+        "reason": "AssertionRewriter docstring - mechanics."
+      },
+      {
+        "candidateId": "c_ae34b0ba0633ea0a",
+        "label": "not_useful",
+        "reason": "--assert option definition; mode, not module selection."
+      },
+      {
+        "candidateId": "c_b14353b57014f30d",
+        "label": "not_useful",
+        "reason": "mark_rewrite warning path for already-imported modules; side-effect warning, not the selection criteria."
+      },
+      {
+        "candidateId": "c_b16159fe51afe5d1",
+        "label": "not_useful",
+        "reason": "Comment 'looks like a test file, so rewrite it' - vague post-decision remark, no criterion visible."
+      },
+      {
+        "candidateId": "c_b93009fc3e979d72",
+        "label": "useful",
+        "reason": "run(): 'if doc is not None and self.is_rewrite_disabled(doc): return' - the PYTEST_DONT_REWRITE docstring opt-out actually skipping rewriting."
+      },
+      {
+        "candidateId": "c_b9a4c6be96c4ad86",
+        "label": "not_useful",
+        "reason": "Module docstring/imports only."
+      },
+      {
+        "candidateId": "c_bbc18d032e823985",
+        "label": "useful",
+        "reason": "find_spec condition block: namespace packages have 'nothing to rewrite' - selection constraint."
+      },
+      {
+        "candidateId": "c_c3ccddbc431e3bd0",
+        "label": "useful",
+        "reason": "_early_rewrite_bailout: 'conftest already by default in _basenames_to_check_rewrite' and basename membership returning False (do not bail) - selection logic."
+      },
+      {
+        "candidateId": "c_c3d2c74304f0f93d",
+        "label": "not_useful",
+        "reason": "Hook docstring about explanation formatting - unrelated."
+      },
+      {
+        "candidateId": "c_ce90577a49245d23",
+        "label": "not_useful",
+        "reason": "_reprcompare comment in util.py - reporting plumbing."
+      },
+      {
+        "candidateId": "c_d402165036d25467",
+        "label": "useful",
+        "reason": "run() docstring scan: 'if self.is_rewrite_disabled(doc): return' - the PYTEST_DONT_REWRITE opt-out deciding not to rewrite the module."
+      },
+      {
+        "candidateId": "c_de3d22e3f53e1cd8",
+        "label": "not_useful",
+        "reason": "Config default rewrite_hook = DummyRewriteHook - installation plumbing."
+      },
+      {
+        "candidateId": "c_e0c4559b887d0de9",
+        "label": "not_useful",
+        "reason": "Hook installation/undo - plumbing."
+      },
+      {
+        "candidateId": "c_e13b3cb4f7c08c6e",
+        "label": "not_useful",
+        "reason": "'Module already imported so cannot be rewritten' warning - a marking-time limitation, not the selection criteria."
+      },
+      {
+        "candidateId": "c_e37aaa3ffd6e13ee",
+        "label": "not_useful",
+        "reason": "DummyRewriteHook fallback + mark_rewrite call without visible enclosing definition - plumbing."
+      },
+      {
+        "candidateId": "c_e7ba172c72ea25c0",
+        "label": "not_useful",
+        "reason": "Warning class - unrelated."
+      },
+      {
+        "candidateId": "c_e7fd3d803d05947c",
+        "label": "useful",
+        "reason": "Hook __init__ state including _must_rewrite and _basenames_to_check_rewrite = {'conftest'} - conftest tracked by default for rewrite checks."
+      },
+      {
+        "candidateId": "c_ec0a67c29e822772",
+        "label": "useful",
+        "reason": "_early_rewrite_bailout def and docstring 'a fast way to get out of rewriting modules' - identifies the fast-skip selection step."
+      },
+      {
+        "candidateId": "c_ec6e53815ad9f4dd",
+        "label": "not_useful",
+        "reason": "Imports only."
+      },
+      {
+        "candidateId": "c_edab7a2749ca1d5f",
+        "label": "not_useful",
+        "reason": "Same plumbing fragment around importhook.mark_rewrite."
+      },
+      {
+        "candidateId": "c_ee2e15f871b2154f",
+        "label": "useful",
+        "reason": "Hook __init__ state: _basenames_to_check_rewrite = {'conftest'} and _marked_for_rewrite_cache - conftest tracked by default for the rewrite decision."
+      },
+      {
+        "candidateId": "c_f31963f14302d55c",
+        "label": "not_useful",
+        "reason": "Same plumbing fragment."
+      },
+      {
+        "candidateId": "c_f4b59c035de5f04e",
+        "label": "not_useful",
+        "reason": "rewrite_asserts body - mechanics."
+      },
+      {
+        "candidateId": "c_f64ec3215629b776",
+        "label": "not_useful",
+        "reason": "AssertionRewriter class docstring - mechanics."
+      },
+      {
+        "candidateId": "c_fa3b435d0e966546",
+        "label": "useful",
+        "reason": "def register_assert_rewrite: 'Register one or more module names to be rewritten on import' - the explicit-registration path named in the answer."
+      },
+      {
+        "candidateId": "c_fa8c362e8648d029",
+        "label": "useful",
+        "reason": "is_rewrite_disabled PYTEST_DONT_REWRITE check - per-module opt-out in the decision."
+      },
+      {
+        "candidateId": "c_ffd62ee5b8ded25f",
+        "label": "not_useful",
+        "reason": "exec_module pyc caching/rewrite invocation - mechanics after the decision."
+      }
+    ],
+    "sympy-simplify-measure": [
+      {
+        "candidateId": "c_066beaad7adaba26",
+        "label": "useful",
+        "reason": "simplify docstring: 'If you don't know what a good metric would be, the default, count_ops, is a good one' - states the default complexity metric."
+      },
+      {
+        "candidateId": "c_20fbbb44c446721a",
+        "label": "not_useful",
+        "reason": "Doctest fragment of a custom my_measure example (values 8/14); no default metric or judgment rule visible."
+      },
+      {
+        "candidateId": "c_2171a64d2b381ae1",
+        "label": "useful",
+        "reason": "Doctest line '>>> 15./8 > 1.7 # 1.7 is the default ratio' - states the default ratio and implies the measure-ratio comparison."
+      },
+      {
+        "candidateId": "c_21b82d417b81d98b",
+        "label": "not_useful",
+        "reason": "fu() picking min by measure - the fu algorithm's internal choice, not simplify's judgment/default."
+      },
+      {
+        "candidateId": "c_21c5fb9cec689dc4",
+        "label": "not_useful",
+        "reason": "Test setup lambdas plus 'simplify(r, ratio=oo) is not r'; shows kwargs exist but not the judgment rule or default metric."
+      },
+      {
+        "candidateId": "c_2969717b8c01eda1",
+        "label": "useful",
+        "reason": "Doctest including '1.7 is the default ratio' comparison and simplify(g, measure=my_measure) - default ratio fact."
+      },
+      {
+        "candidateId": "c_2b3e476be4a74cbf",
+        "label": "not_useful",
+        "reason": "powsimp recursive kwargs plumbing; different function."
+      },
+      {
+        "candidateId": "c_2e3fd60e5f144762",
+        "label": "useful",
+        "reason": "Docstring: 'The default ratio=1.7 prevents more extreme cases: if (result length)/(input length) > ratio, then input is returned unmodified. The measure parameter lets you specify the function...' - states the judgment rule and default ratio."
+      },
+      {
+        "candidateId": "c_2e9f0c5f0191a662",
+        "label": "useful",
+        "reason": "def simplify(expr, ratio=1.7, measure=count_ops, ...) - the signature with both defaults, directly answering the default metric."
+      },
+      {
+        "candidateId": "c_2f7a640c7ede4910",
+        "label": "useful",
+        "reason": "test_simplify_measure asserting measure1(simplify(expr, measure=measure1)) <= measure1(expr) - behavioral evidence simplify judges results by the supplied measure."
+      },
+      {
+        "candidateId": "c_3dcaf91032156962",
+        "label": "useful",
+        "reason": "simplify's internal shortest(): return min(choices, key=measure) - candidate results are compared by the measure function."
+      },
+      {
+        "candidateId": "c_4458cdd62bc560f9",
+        "label": "useful",
+        "reason": "Test asserts measure(simplify(expr2, measure=m)) <= m(expr2) - behavioral evidence of measure-based judgment."
+      },
+      {
+        "candidateId": "c_55d7debbd6299767",
+        "label": "not_useful",
+        "reason": "test_trigsimp measure lambdas - trigsimp, not simplify's judgment."
+      },
+      {
+        "candidateId": "c_5aff61aece250251",
+        "label": "not_useful",
+        "reason": "powsimp signature with measure=count_ops - different function than simplify."
+      },
+      {
+        "candidateId": "c_654fe544a4e1251c",
+        "label": "not_useful",
+        "reason": "simplify propagating ratio/measure through kwargs - plumbing, no judgment rule or default stated beyond parameter names."
+      },
+      {
+        "candidateId": "c_6d9601f074521227",
+        "label": "not_useful",
+        "reason": "trigsimp test setup lambdas; different function."
+      },
+      {
+        "candidateId": "c_704e12dde4579bd7",
+        "label": "not_useful",
+        "reason": "powsimp kwargs recursion; different function."
+      },
+      {
+        "candidateId": "c_73c29f68f5d05ca0",
+        "label": "not_useful",
+        "reason": "fu() doctest with custom measure; fu, not simplify."
+      },
+      {
+        "candidateId": "c_7564a1f2e3637385",
+        "label": "not_useful",
+        "reason": "fu internals building greedy rule lists with measure; not simplify's judgment."
+      },
+      {
+        "candidateId": "c_7de3b69deda8f10e",
+        "label": "useful",
+        "reason": "Test lines asserting simplify output measure <= input measure for both custom measures - measure-based acceptance behavior."
+      },
+      {
+        "candidateId": "c_7f8382103ae9eaed",
+        "label": "not_useful",
+        "reason": "fu's own default measure lambda (L, count_ops) - fu's default, not simplify's."
+      },
+      {
+        "candidateId": "c_85f2fd711d2ed96a",
+        "label": "useful",
+        "reason": "Docstring: 'The default measure function is count_ops, which returns the total number of operations' - states the default metric explicitly."
+      },
+      {
+        "candidateId": "c_8d0a6c772fdfe252",
+        "label": "not_useful",
+        "reason": "fu recursion over args; not simplify."
+      },
+      {
+        "candidateId": "c_9b63b48278d78e3e",
+        "label": "not_useful",
+        "reason": "Docstring example defining a custom my_measure with POW weights; illustrates customization, no default/rule visible."
+      },
+      {
+        "candidateId": "c_a1f9b18a6cb2c9bd",
+        "label": "not_useful",
+        "reason": "fu min-by-measure selection; not simplify."
+      },
+      {
+        "candidateId": "c_b3ed4005b451d267",
+        "label": "not_useful",
+        "reason": "test_fu objective test; fu, not simplify."
+      },
+      {
+        "candidateId": "c_baec9d4c527fcc6d",
+        "label": "not_useful",
+        "reason": "trigsimp(method='fu') measure test; different function."
+      },
+      {
+        "candidateId": "c_c5e6d51c2e7cb706",
+        "label": "useful",
+        "reason": "Test lines asserting measure1(simplify(expr, measure=measure1)) <= measure1(expr) - behavioral evidence simplify judges results by the supplied measure."
+      },
+      {
+        "candidateId": "c_c725ab48aa8e27b6",
+        "label": "not_useful",
+        "reason": "fu docstring on minimizing its objective; fu's default, not simplify's."
+      },
+      {
+        "candidateId": "c_cd211016e9e48303",
+        "label": "useful",
+        "reason": "The final acceptance check in simplify: if measure(expr) > ratio*measure(original_expr): expr = original_expr - the exact judgment/revert rule."
+      },
+      {
+        "candidateId": "c_cd33e4547a1cb77d",
+        "label": "not_useful",
+        "reason": "trigsimp fu-method test lines; different function."
+      },
+      {
+        "candidateId": "c_d336a0bbb181acfc",
+        "label": "not_useful",
+        "reason": "powsimp sorting bases by measure - internal to powsimp."
+      },
+      {
+        "candidateId": "c_d837deeab80b5798",
+        "label": "useful",
+        "reason": "Docstring: simplify 'internally tries many different simplification strategies and then compares them using the measure function' - states how results are judged."
+      },
+      {
+        "candidateId": "c_da10e0d412804319",
+        "label": "not_useful",
+        "reason": "test_fu objective assertions; fu, not simplify."
+      },
+      {
+        "candidateId": "c_df4c0df531c1ce72",
+        "label": "not_useful",
+        "reason": "Test setup (lambdas, expr) only; no assertion or rule visible."
+      },
+      {
+        "candidateId": "c_e7f4007d22cb3081",
+        "label": "not_useful",
+        "reason": "fu comparing measure(rv1) < measure(rv); fu internals."
+      },
+      {
+        "candidateId": "c_eeb6e69bede88b39",
+        "label": "not_useful",
+        "reason": "fu greedy setup; not simplify."
+      },
+      {
+        "candidateId": "c_f3a589e01e1b532a",
+        "label": "useful",
+        "reason": "Docstring: 'Heuristically, the default value ratio=1.7 seems like a reasonable choice' plus custom-measure guidance - default ratio fact."
+      },
+      {
+        "candidateId": "c_ffb13629d09a3576",
+        "label": "useful",
+        "reason": "Test asserts on Eq: simplify result measure <= input measure for supplied measures - measure-based judgment behavior."
+      }
+    ],
+    "sympy-free-symbols": [
+      {
+        "candidateId": "c_03d709c4a97c3442",
+        "label": "not_useful",
+        "reason": "as_independent internals using e.free_symbols - usage, not the definition or Symbol base case."
+      },
+      {
+        "candidateId": "c_0737a07c529f25b0",
+        "label": "not_useful",
+        "reason": "Add._eval_is_* using len(self.free_symbols) - usage only."
+      },
+      {
+        "candidateId": "c_0e2e56788208ee59",
+        "label": "not_useful",
+        "reason": "extract_branch_factor using free_symbols - usage."
+      },
+      {
+        "candidateId": "c_12ba3ffb0ca94a05",
+        "label": "not_useful",
+        "reason": "expr_free_symbols doctest contrasting with free_symbols - different property; shows behavior, not where free_symbols is computed."
+      },
+      {
+        "candidateId": "c_239f67676023a324",
+        "label": "useful",
+        "reason": "basic.py:513-517 - the @property free_symbols definition head with docstring 'Return from the atoms of self those which are free symbols' - locates the generic Basic implementation."
+      },
+      {
+        "candidateId": "c_241f4e0fa477f77d",
+        "label": "not_useful",
+        "reason": "Derivative construction using expr.free_symbols - usage."
+      },
+      {
+        "candidateId": "c_2828c2aa655223c9",
+        "label": "not_useful",
+        "reason": "Subs/derivative renaming logic using free_symbols - usage."
+      },
+      {
+        "candidateId": "c_30cbf6f8c76a574e",
+        "label": "not_useful",
+        "reason": "is_rational_function defaulting syms to self.free_symbols - usage."
+      },
+      {
+        "candidateId": "c_33801ad71150c55d",
+        "label": "not_useful",
+        "reason": "Derivative _eval_subs computing free-symbol sets - usage."
+      },
+      {
+        "candidateId": "c_34c366160e1c1ecc",
+        "label": "not_useful",
+        "reason": "evalf integral bounds symbol intersection - usage."
+      },
+      {
+        "candidateId": "c_35844ed01bbce43b",
+        "label": "not_useful",
+        "reason": "Derivative numeric eval requiring one free symbol - usage."
+      },
+      {
+        "candidateId": "c_36d4a0fa97aa4edd",
+        "label": "not_useful",
+        "reason": "Add positivity heuristics using free_symbols - usage."
+      },
+      {
+        "candidateId": "c_3b5758a8c577fa18",
+        "label": "not_useful",
+        "reason": "Derivative doit logic reading expr.free_symbols - usage."
+      },
+      {
+        "candidateId": "c_3e91ea29d0aedd40",
+        "label": "not_useful",
+        "reason": "Basic.dummy_eq scanning free_symbols for Dummies - usage."
+      },
+      {
+        "candidateId": "c_42f56c88e6185d39",
+        "label": "not_useful",
+        "reason": "An override returning expr.free_symbols - set(variables) (bound-variable class in function.py); not the generic Basic computation nor the Symbol base case."
+      },
+      {
+        "candidateId": "c_4780d7437528d8ca",
+        "label": "not_useful",
+        "reason": "exprtools univariate check via free_symbols - usage."
+      },
+      {
+        "candidateId": "c_4ce5bd36e7d635e5",
+        "label": "not_useful",
+        "reason": "series() dependence check via free_symbols - usage."
+      },
+      {
+        "candidateId": "c_4e30a0ab6a7c2675",
+        "label": "not_useful",
+        "reason": "diff variable inference from free_symbols - usage."
+      },
+      {
+        "candidateId": "c_4f649bd3bbeddcd9",
+        "label": "not_useful",
+        "reason": "Subs derivative comment about expr_free_symbols - usage/comment, not the definition."
+      },
+      {
+        "candidateId": "c_50526597f9d2b23f",
+        "label": "not_useful",
+        "reason": "_eval_nseries free-symbol check - usage."
+      },
+      {
+        "candidateId": "c_5381103b504687df",
+        "label": "not_useful",
+        "reason": "Derivative.free_symbols override adding symbolic counts - an override, not the generic computation or Symbol base case."
+      },
+      {
+        "candidateId": "c_53a28d18a8128a68",
+        "label": "not_useful",
+        "reason": "_eval_is_rational_function intersection check - usage."
+      },
+      {
+        "candidateId": "c_58341e1f7718fa6a",
+        "label": "not_useful",
+        "reason": "Lambda-style override expr.free_symbols - set(variables) with bound_symbols alias - override, not the asked generic/base-case code."
+      },
+      {
+        "candidateId": "c_5c74caaaa3169ada",
+        "label": "not_useful",
+        "reason": "Derivative sorting helper intersecting free_symbols - usage."
+      },
+      {
+        "candidateId": "c_5d8f31c7067d15ca",
+        "label": "not_useful",
+        "reason": "is_polynomial defaulting syms to free_symbols - usage."
+      },
+      {
+        "candidateId": "c_5ecbd34c6e8def96",
+        "label": "not_useful",
+        "reason": "_monotonic_sign substituting per free symbol - usage."
+      },
+      {
+        "candidateId": "c_625f0d7078f277ed",
+        "label": "not_useful",
+        "reason": "Subs.expr_free_symbols override - different property."
+      },
+      {
+        "candidateId": "c_63384b7e97357300",
+        "label": "not_useful",
+        "reason": "Series dependence check via xreplace/free_symbols - usage."
+      },
+      {
+        "candidateId": "c_6c285913b0c2966b",
+        "label": "not_useful",
+        "reason": "Derivative doit branch using subs/free_symbols - usage."
+      },
+      {
+        "candidateId": "c_6c8fb3626b80a138",
+        "label": "not_useful",
+        "reason": "as_leading_term free-symbol membership check - usage."
+      },
+      {
+        "candidateId": "c_6ece4695b7fff935",
+        "label": "not_useful",
+        "reason": "leadterm coefficient check x in c.free_symbols - usage."
+      },
+      {
+        "candidateId": "c_719c7568e570fa76",
+        "label": "not_useful",
+        "reason": "Add negativity heuristic using free_symbols - usage."
+      },
+      {
+        "candidateId": "c_72670940e4f7723a",
+        "label": "useful",
+        "reason": "The generic computation: return set().union(*[a.free_symbols for a in self.args]) with docstring tail about bound-variable classes overriding - core answer."
+      },
+      {
+        "candidateId": "c_75c342eea27bfd74",
+        "label": "not_useful",
+        "reason": "expr_free_symbols property docstring - related but distinct property."
+      },
+      {
+        "candidateId": "c_75c93e8398edefcc",
+        "label": "not_useful",
+        "reason": "Derivative.free_symbols override body - override, not generic/base case."
+      },
+      {
+        "candidateId": "c_77b666a54e660aa7",
+        "label": "not_useful",
+        "reason": "expr_free_symbols comprehension over args - different property."
+      },
+      {
+        "candidateId": "c_7b788ba980d94b3f",
+        "label": "not_useful",
+        "reason": "aseries/series symbol inference from free_symbols - usage."
+      },
+      {
+        "candidateId": "c_83981b3c52085cf2",
+        "label": "not_useful",
+        "reason": "Derivative variable_count free-symbol loop - usage."
+      },
+      {
+        "candidateId": "c_856d85dc87801836",
+        "label": "not_useful",
+        "reason": "Subs.free_symbols override (expr minus variables union point) - override, not the generic computation or Symbol base."
+      },
+      {
+        "candidateId": "c_880719c24820c8d3",
+        "label": "not_useful",
+        "reason": "Derivative numeric eval free_symbols length check - usage."
+      },
+      {
+        "candidateId": "c_8db7f032b05fcc57",
+        "label": "not_useful",
+        "reason": "expr_free_symbols returning {self} (atomic case of a different property; class not visible) - not Symbol.free_symbols."
+      },
+      {
+        "candidateId": "c_8e53157f0fe65cd9",
+        "label": "not_useful",
+        "reason": "Derivative _eval_subs free-symbol set arithmetic - usage."
+      },
+      {
+        "candidateId": "c_8fd8a6ceeeb7eaae",
+        "label": "not_useful",
+        "reason": "is_polynomial syms.intersection(self.free_symbols) check - usage of the property, not its generic computation or the Symbol base case."
+      },
+      {
+        "candidateId": "c_923e1db9eaa82872",
+        "label": "not_useful",
+        "reason": "Subs evaluation xreplace/free_symbols check - usage."
+      },
+      {
+        "candidateId": "c_946522d9c12a853c",
+        "label": "not_useful",
+        "reason": "Derivative.free_symbols override body - override."
+      },
+      {
+        "candidateId": "c_9b0b2e9bf8a09caf",
+        "label": "not_useful",
+        "reason": "is_constant shortcut via free_symbols - usage."
+      },
+      {
+        "candidateId": "c_9bb2da0b555d1474",
+        "label": "not_useful",
+        "reason": "Derivative subs logic using free_symbols - usage."
+      },
+      {
+        "candidateId": "c_9be81a9a60016251",
+        "label": "not_useful",
+        "reason": "Traversal helper getattr(e,'free_symbols',None) fallback - usage, not the property definition."
+      },
+      {
+        "candidateId": "c_9d22a0ffb8e8eec7",
+        "label": "not_useful",
+        "reason": "fdiff argument scan via free_symbols - usage."
+      },
+      {
+        "candidateId": "c_9e65f2ab58a0db62",
+        "label": "not_useful",
+        "reason": "Random-value substitution over free symbols - usage."
+      },
+      {
+        "candidateId": "c_9fd930f93b5ca110",
+        "label": "not_useful",
+        "reason": "expr_free_symbols doctest - different property."
+      },
+      {
+        "candidateId": "c_a470a255e7b7c1fe",
+        "label": "not_useful",
+        "reason": "is_number docstring referencing free_symbols - usage/description of another property."
+      },
+      {
+        "candidateId": "c_a6e371f5c2a735a5",
+        "label": "useful",
+        "reason": "Docstring middle: Integral/Derivative treat dummies as bound variables and provide their own free_symbols - the override caveat in the reference answer."
+      },
+      {
+        "candidateId": "c_a82e270458551cf8",
+        "label": "not_useful",
+        "reason": "is_constant docstring mentioning free_symbols - usage."
+      },
+      {
+        "candidateId": "c_b32b54316390d660",
+        "label": "not_useful",
+        "reason": "_monotonic_sign listing free symbols - usage."
+      },
+      {
+        "candidateId": "c_b33de8f59d851d21",
+        "label": "useful",
+        "reason": "Overlapping snippet showing the union-over-args return in basic.py."
+      },
+      {
+        "candidateId": "c_b55c35273857f37c",
+        "label": "not_useful",
+        "reason": "diff helper getattr(expr,'free_symbols') check - usage."
+      },
+      {
+        "candidateId": "c_b74e314b26ad34aa",
+        "label": "not_useful",
+        "reason": "Add heuristic using free_symbols - usage."
+      },
+      {
+        "candidateId": "c_b75211c8da5f41d3",
+        "label": "not_useful",
+        "reason": "is_algebraic_expr defaulting syms to free_symbols - usage."
+      },
+      {
+        "candidateId": "c_c40ac5ccea376f6c",
+        "label": "not_useful",
+        "reason": "_eval_is_polynomial intersection - usage."
+      },
+      {
+        "candidateId": "c_c58359d3be597b18",
+        "label": "not_useful",
+        "reason": "evalf integral bounds check x not in func.free_symbols - usage."
+      },
+      {
+        "candidateId": "c_c71d9524297162b2",
+        "label": "not_useful",
+        "reason": "Subs.free_symbols override - override."
+      },
+      {
+        "candidateId": "c_c9489ecf26e66f0a",
+        "label": "useful",
+        "reason": "Shows the union-over-args return line (526) plus following expr_free_symbols property - confirms the generic computation location."
+      },
+      {
+        "candidateId": "c_ca832cbd4ae44245",
+        "label": "not_useful",
+        "reason": "Subs.free_symbols override - override."
+      },
+      {
+        "candidateId": "c_ca9c13b2734cae6b",
+        "label": "not_useful",
+        "reason": "is_rational_function intersection - usage."
+      },
+      {
+        "candidateId": "c_cb5a47a420cce2eb",
+        "label": "not_useful",
+        "reason": "Derivative sorting helper free-symbol checks - usage."
+      },
+      {
+        "candidateId": "c_cb8cef89188aab0b",
+        "label": "not_useful",
+        "reason": "Subs.expr_free_symbols override - different property."
+      },
+      {
+        "candidateId": "c_d22729858787df1e",
+        "label": "not_useful",
+        "reason": "expr_free_symbols docstring head - different property."
+      },
+      {
+        "candidateId": "c_d42427881c4d8686",
+        "label": "not_useful",
+        "reason": "as_leading_term Order check using free_symbols - usage."
+      },
+      {
+        "candidateId": "c_db45911645b2c030",
+        "label": "not_useful",
+        "reason": "expr_free_symbols doctest - different property."
+      },
+      {
+        "candidateId": "c_e0f8718bb28324c9",
+        "label": "not_useful",
+        "reason": "Derivative _eval_subs free-symbol sets - usage."
+      },
+      {
+        "candidateId": "c_e1cb06a85e95cd69",
+        "label": "not_useful",
+        "reason": "Subs derivative free-symbol intersection - usage."
+      },
+      {
+        "candidateId": "c_e8377ab2a63c8220",
+        "label": "not_useful",
+        "reason": "An override returning set() (class not visible) - not the generic computation or Symbol base case."
+      },
+      {
+        "candidateId": "c_eef5c4c49d40b570",
+        "label": "not_useful",
+        "reason": "dummy_eq deriving symbol from o.free_symbols - usage."
+      },
+      {
+        "candidateId": "c_f03c916499bbb950",
+        "label": "not_useful",
+        "reason": "is_algebraic_expr intersection - usage."
+      },
+      {
+        "candidateId": "c_f066d58742aa5920",
+        "label": "not_useful",
+        "reason": "Doctest showing Integral's dummy excluded from free_symbols - demonstrates an override's behavior, not the generic computation or Symbol base case."
+      },
+      {
+        "candidateId": "c_f680e5af304a9d9a",
+        "label": "not_useful",
+        "reason": "is_constant derivative branch checking deriv.free_symbols - usage."
+      },
+      {
+        "candidateId": "c_f9ab6b884acb6180",
+        "label": "not_useful",
+        "reason": "Subs.expr_free_symbols override - different property."
+      },
+      {
+        "candidateId": "c_fa3a5f6cbb13971a",
+        "label": "not_useful",
+        "reason": "Derivative.free_symbols override head - override."
+      },
+      {
+        "candidateId": "c_fe31f07dc1040c9d",
+        "label": "not_useful",
+        "reason": "_eval_is_algebraic_expr intersection - usage."
+      }
+    ],
+    "sympy-parse-expr-ctrl": [
+      {
+        "candidateId": "c_69c1d2a10d667efc",
+        "label": "not_useful",
+        "reason": "parse_expression in radsimp.py is an unrelated helper for matching term patterns, not string-to-expression parsing."
+      },
+      {
+        "candidateId": "c_71bf7f3e0140b916",
+        "label": "not_useful",
+        "reason": "A homonymous def parse_expr in sympy/parsing/ast_parser.py; verified against pinned source that the exported/canonical parse_expr (sympy/__init__.py and sympify) is sympy_parser's - this is a non-exported alternate, so it does not locate the asked definition."
+      },
+      {
+        "candidateId": "c_93f4b1266facbc0c",
+        "label": "useful",
+        "reason": "The definition itself: def parse_expr(s, local_dict=None, transformations=standard_transformations, global_dict=None, evaluate=True) in sympy/parsing/sympy_parser.py with docstring 'Converts the string s to a SymPy expression'."
+      }
+    ]
+  }
+}

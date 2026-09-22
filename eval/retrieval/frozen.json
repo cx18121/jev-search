@@ -1,0 +1,2262 @@
+{
+  "queriesSha256": "aded34edcab5404a2ff5d142afe1e00069f87165a80d9abc5e7bf9c2af06e623",
+  "protocolSha256": "a1b97cf773c6d19329cd0c1ca61afc8b5afc9401c2f5bb31ad850a0aa1971474",
+  "pools": [
+    {
+      "query": {
+        "id": "req-redirect-auth-strip",
+        "fixtureTaskId": "psf__requests-3362",
+        "kind": "exploratory",
+        "intent": "When a request is redirected to a different host, where does requests decide whether to drop the Authorization header?",
+        "pattern": "Authorization",
+        "path": "requests",
+        "mode": "plain",
+        "referenceAnswer": "SessionRedirectMixin.rebuild_auth in requests/sessions.py deletes the Authorization header whenever the redirect target's hostname differs from the original request's hostname, then optionally reapplies credentials from .netrc via get_netrc_auth when trust_env is set.",
+        "evidence": [
+          {
+            "path": "requests/sessions.py",
+            "start": 187,
+            "end": 210,
+            "reason": "rebuild_auth: compares original vs redirect hostname and deletes the Authorization header on host change; reapplies netrc auth if trust_env."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_bc5668e93b086ec3",
+          "path": "requests/adapters.py",
+          "line": 365,
+          "text": "requests/adapters.py:365\n362:         username, password = get_auth_from_url(proxy)\n363: \n364:         if username and password:\n365:             headers['Proxy-Authorization'] = _basic_auth_str(username,\n366:                                                              password)\n367: \n368:         return headers",
+          "definition": false
+        },
+        {
+          "id": "c_197486d76a6a8770",
+          "path": "requests/auth.py",
+          "line": 60,
+          "text": "requests/auth.py:60\n57:         return not self == other\n58: \n59:     def __call__(self, r):\n60:         r.headers['Authorization'] = _basic_auth_str(self.username, self.password)\n61:         return r\n62: \n63: ",
+          "definition": false
+        },
+        {
+          "id": "c_2a1d4ee8f3265dbe",
+          "path": "requests/auth.py",
+          "line": 67,
+          "text": "requests/auth.py:67\n64: class HTTPProxyAuth(HTTPBasicAuth):\n65:     \"\"\"Attaches HTTP Proxy Authentication to a given Request object.\"\"\"\n66:     def __call__(self, r):\n67:         r.headers['Proxy-Authorization'] = _basic_auth_str(self.username, self.password)\n68:         return r\n69: \n70: ",
+          "definition": false
+        },
+        {
+          "id": "c_665e0dd1f0433500",
+          "path": "requests/auth.py",
+          "line": 204,
+          "text": "requests/auth.py:204\n201:             extract_cookies_to_jar(prep._cookies, r.request, r.raw)\n202:             prep.prepare_cookies(prep._cookies)\n203: \n204:             prep.headers['Authorization'] = self.build_digest_header(\n205:                 prep.method, prep.url)\n206:             _r = r.connection.send(prep, **kwargs)\n207:             _r.history.append(r)",
+          "definition": false
+        },
+        {
+          "id": "c_b746ffa4e8ed8fd7",
+          "path": "requests/auth.py",
+          "line": 220,
+          "text": "requests/auth.py:220\n217:         self.init_per_thread_state()\n218:         # If we have a saved nonce, skip the 401\n219:         if self._thread_local.last_nonce:\n220:             r.headers['Authorization'] = self.build_digest_header(r.method, r.url)\n221:         try:\n222:             self._thread_local.pos = r.body.tell()\n223:         except AttributeError:",
+          "definition": false
+        },
+        {
+          "id": "c_abe5c9b10f1c6cc8",
+          "path": "requests/sessions.py",
+          "line": 196,
+          "text": "requests/sessions.py:196\n193:         headers = prepared_request.headers\n194:         url = prepared_request.url\n195: \n196:         if 'Authorization' in headers:\n197:             # If we get redirected to a new host, we should strip out any\n198:             # authentication headers.\n199:             original_parsed = urlparse(response.request.url)",
+          "definition": false
+        },
+        {
+          "id": "c_03bb5717d71f4235",
+          "path": "requests/sessions.py",
+          "line": 203,
+          "text": "requests/sessions.py:203\n200:             redirect_parsed = urlparse(url)\n201: \n202:             if (original_parsed.hostname != redirect_parsed.hostname):\n203:                 del headers['Authorization']\n204: \n205:         # .netrc might have more auth for us on our new host.\n206:         new_auth = get_netrc_auth(url) if self.trust_env else None",
+          "definition": false
+        },
+        {
+          "id": "c_aa4c3ba0cf47e7e3",
+          "path": "requests/sessions.py",
+          "line": 220,
+          "text": "requests/sessions.py:220\n217:         proxy keys for this URL (in case they were stripped by a previous\n218:         redirect).\n219: \n220:         This method also replaces the Proxy-Authorization header where\n221:         necessary.\n222:         \"\"\"\n223:         headers = prepared_request.headers",
+          "definition": false
+        },
+        {
+          "id": "c_3fb1acfe6c662c4c",
+          "path": "requests/sessions.py",
+          "line": 236,
+          "text": "requests/sessions.py:236\n233:             if proxy:\n234:                 new_proxies.setdefault(scheme, proxy)\n235: \n236:         if 'Proxy-Authorization' in headers:\n237:             del headers['Proxy-Authorization']\n238: \n239:         try:",
+          "definition": false
+        },
+        {
+          "id": "c_adf03def6a5b46c0",
+          "path": "requests/sessions.py",
+          "line": 237,
+          "text": "requests/sessions.py:237\n234:                 new_proxies.setdefault(scheme, proxy)\n235: \n236:         if 'Proxy-Authorization' in headers:\n237:             del headers['Proxy-Authorization']\n238: \n239:         try:\n240:             username, password = get_auth_from_url(new_proxies[scheme])",
+          "definition": false
+        },
+        {
+          "id": "c_cb21c4e47d512696",
+          "path": "requests/sessions.py",
+          "line": 245,
+          "text": "requests/sessions.py:245\n242:             username, password = None, None\n243: \n244:         if username and password:\n245:             headers['Proxy-Authorization'] = _basic_auth_str(username, password)\n246: \n247:         return new_proxies\n248: ",
+          "definition": false
+        },
+        {
+          "id": "c_11c75e860ab880c3",
+          "path": "requests/packages/urllib3/contrib/ntlmpool.py",
+          "line": 51,
+          "text": "requests/packages/urllib3/contrib/ntlmpool.py:51\n48: \n49:         headers = {}\n50:         headers['Connection'] = 'Keep-Alive'\n51:         req_header = 'Authorization'\n52:         resp_header = 'www-authenticate'\n53: \n54:         conn = HTTPSConnection(host=self.host, port=self.port)",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/psf__requests-3362",
+      "sourceSha256": "307e17ea03b433d52d305c82a9b5d751f76ad9a2328fee8af9b758d0f7a3a31a",
+      "collection": {
+        "totalMatched": 12,
+        "totalFiles": 140,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 12,
+          "orderChanged": true,
+          "shown": 12,
+          "remainingInPool": 0,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 7
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "req-redirect-limit",
+        "fixtureTaskId": "psf__requests-3362",
+        "kind": "exploratory",
+        "intent": "How many redirects will requests follow by default, and where is that limit enforced?",
+        "pattern": "max_redirects",
+        "path": "requests",
+        "mode": "plain",
+        "referenceAnswer": "The default is DEFAULT_REDIRECT_LIMIT = 30, defined in requests/models.py and assigned to Session.max_redirects in Session.__init__; SessionRedirectMixin.resolve_redirects raises TooManyRedirects once the redirect count reaches self.max_redirects.",
+        "evidence": [
+          {
+            "path": "requests/models.py",
+            "start": 47,
+            "end": 47,
+            "reason": "DEFAULT_REDIRECT_LIMIT = 30, the default value."
+          },
+          {
+            "path": "requests/sessions.py",
+            "start": 112,
+            "end": 113,
+            "reason": "resolve_redirects enforcement: raises TooManyRedirects when i >= self.max_redirects."
+          },
+          {
+            "path": "requests/sessions.py",
+            "start": 334,
+            "end": 334,
+            "reason": "Session.__init__ sets self.max_redirects = DEFAULT_REDIRECT_LIMIT."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_6e125237f1d756a7",
+          "path": "requests/sessions.py",
+          "line": 112,
+          "text": "requests/sessions.py:112\n109:             except (ChunkedEncodingError, ContentDecodingError, RuntimeError):\n110:                 resp.raw.read(decode_content=False)\n111: \n112:             if i >= self.max_redirects:\n113:                 raise TooManyRedirects('Exceeded %s redirects.' % self.max_redirects, response=resp)\n114: \n115:             # Release the connection back into the pool.",
+          "definition": false
+        },
+        {
+          "id": "c_6884baae5c29c1e8",
+          "path": "requests/sessions.py",
+          "line": 113,
+          "text": "requests/sessions.py:113\n110:                 resp.raw.read(decode_content=False)\n111: \n112:             if i >= self.max_redirects:\n113:                 raise TooManyRedirects('Exceeded %s redirects.' % self.max_redirects, response=resp)\n114: \n115:             # Release the connection back into the pool.\n116:             resp.close()",
+          "definition": false
+        },
+        {
+          "id": "c_1b6cea8ce3e269d1",
+          "path": "requests/sessions.py",
+          "line": 294,
+          "text": "requests/sessions.py:294\n291:     __attrs__ = [\n292:         'headers', 'cookies', 'auth', 'proxies', 'hooks', 'params', 'verify',\n293:         'cert', 'prefetch', 'adapters', 'stream', 'trust_env',\n294:         'max_redirects',\n295:     ]\n296: \n297:     def __init__(self):",
+          "definition": false
+        },
+        {
+          "id": "c_09185edca63512b7",
+          "path": "requests/sessions.py",
+          "line": 334,
+          "text": "requests/sessions.py:334\n331:         #: limit, a :class:`TooManyRedirects` exception is raised.\n332:         #: This defaults to requests.models.DEFAULT_REDIRECT_LIMIT, which is\n333:         #: 30.\n334:         self.max_redirects = DEFAULT_REDIRECT_LIMIT\n335: \n336:         #: Trust environment settings for proxy configuration, default\n337:         #: authentication and similar.",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/psf__requests-3362",
+      "sourceSha256": "307e17ea03b433d52d305c82a9b5d751f76ad9a2328fee8af9b758d0f7a3a31a",
+      "collection": {
+        "totalMatched": 4,
+        "totalFiles": 140,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 4,
+          "orderChanged": true,
+          "shown": 4,
+          "remainingInPool": 0,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 5
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "req-apparent-encoding-ctrl",
+        "fixtureTaskId": "psf__requests-3362",
+        "kind": "control",
+        "intent": "Locate the definition of Response.apparent_encoding and identify which library it delegates to.",
+        "pattern": "def apparent_encoding",
+        "mode": "plain",
+        "referenceAnswer": "Response.apparent_encoding is a property in requests/models.py that returns chardet.detect(self.content)['encoding'], i.e. it delegates content-sniffed encoding detection to the bundled chardet library.",
+        "evidence": [
+          {
+            "path": "requests/models.py",
+            "start": 648,
+            "end": 651,
+            "reason": "Property definition returning chardet.detect(self.content)['encoding']."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_58c5a6da1cd7200a",
+          "path": "requests/models.py",
+          "line": 649,
+          "text": "requests/models.py:649\n646:         return ('location' in self.headers and self.status_code in (codes.moved_permanently, codes.permanent_redirect))\n647: \n648:     @property\n649:     def apparent_encoding(self):\n650:         \"\"\"The apparent encoding, provided by the chardet library\"\"\"\n651:         return chardet.detect(self.content)['encoding']\n652: ",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/psf__requests-3362",
+      "sourceSha256": "307e17ea03b433d52d305c82a9b5d751f76ad9a2328fee8af9b758d0f7a3a31a",
+      "collection": {
+        "totalMatched": 1,
+        "totalFiles": 140,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 1,
+          "orderChanged": true,
+          "shown": 1,
+          "remainingInPool": 0,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 16
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "pytest-collect-file-patterns",
+        "fixtureTaskId": "pytest-dev__pytest-7220",
+        "kind": "exploratory",
+        "intent": "How does pytest decide whether a .py file should be collected as a test module?",
+        "pattern": "python_files",
+        "path": "src/_pytest",
+        "mode": "plain",
+        "referenceAnswer": "pytest_collect_file in src/_pytest/python.py collects a .py file only if it is an initial (command-line) path or matches one of the python_files ini glob patterns plus __init__.py; matching is done by path_matches_patterns using py.path fnmatch, then pytest_pycollect_makemodule creates the module node.",
+        "evidence": [
+          {
+            "path": "src/_pytest/python.py",
+            "start": 176,
+            "end": 190,
+            "reason": "pytest_collect_file gate on python_files ini patterns and the path_matches_patterns fnmatch helper."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_6704380b203091e0",
+          "path": "src/_pytest/main.py",
+          "line": 585,
+          "text": "src/_pytest/main.py:585\n582:                 except StopIteration:\n583:                     # The package collects nothing with only an __init__.py\n584:                     # file in it, which gets ignored by the default\n585:                     # \"python_files\" option.\n586:                     pass\n587:                 return\n588:             yield from m",
+          "definition": false
+        },
+        {
+          "id": "c_9f0b873fdcb0afb7",
+          "path": "src/_pytest/python.py",
+          "line": 79,
+          "text": "src/_pytest/python.py:79\n76:         help=\"show fixtures per test\",\n77:     )\n78:     parser.addini(\n79:         \"python_files\",\n80:         type=\"args\",\n81:         # NOTE: default is also used in AssertionRewritingHook.\n82:         default=[\"test_*.py\", \"*_test.py\"],",
+          "definition": false
+        },
+        {
+          "id": "c_c7e9bb575a6b308c",
+          "path": "src/_pytest/python.py",
+          "line": 181,
+          "text": "src/_pytest/python.py:181\n178:     if ext == \".py\":\n179:         if not parent.session.isinitpath(path):\n180:             if not path_matches_patterns(\n181:                 path, parent.config.getini(\"python_files\") + [\"__init__.py\"]\n182:             ):\n183:                 return\n184:         ihook = parent.session.gethookproxy(path)",
+          "definition": false
+        },
+        {
+          "id": "c_0441572c28c55ed3",
+          "path": "src/_pytest/python.py",
+          "line": 602,
+          "text": "src/_pytest/python.py:602\n599:         this_path = self.fspath.dirpath()\n600:         init_module = this_path.join(\"__init__.py\")\n601:         if init_module.check(file=1) and path_matches_patterns(\n602:             init_module, self.config.getini(\"python_files\")\n603:         ):\n604:             yield Module.from_parent(self, fspath=init_module)\n605:         pkg_prefixes = set()",
+          "definition": false
+        },
+        {
+          "id": "c_9ac70f669bd2399c",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 54,
+          "text": "src/_pytest/assertion/rewrite.py:54\n51:     def __init__(self, config):\n52:         self.config = config\n53:         try:\n54:             self.fnpats = config.getini(\"python_files\")\n55:         except ValueError:\n56:             self.fnpats = [\"test_*.py\", \"*_test.py\"]\n57:         self.session = None",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/pytest-dev__pytest-7220",
+      "sourceSha256": "78e1b86483084b9694259b9a67f53f896c113a87a1bb5b0db8c9e841a15e2711",
+      "collection": {
+        "totalMatched": 5,
+        "totalFiles": 512,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 5,
+          "orderChanged": true,
+          "shown": 5,
+          "remainingInPool": 0,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 27
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "pytest-maxfail-stop",
+        "fixtureTaskId": "pytest-dev__pytest-7220",
+        "kind": "exploratory",
+        "intent": "Where does pytest implement stopping the whole run after a number of test failures (the -x / --maxfail behavior)?",
+        "pattern": "maxfail",
+        "path": "src/_pytest",
+        "mode": "plain",
+        "referenceAnswer": "In src/_pytest/main.py: -x is a store_const alias setting maxfail=1 and --maxfail stores an int (default 0). Session.pytest_runtest_logreport increments testsfailed on each failure and sets self.shouldfail once testsfailed >= maxfail; pytest_collectstart then raises Session.Failed, aborting the session.",
+        "evidence": [
+          {
+            "path": "src/_pytest/main.py",
+            "start": 56,
+            "end": 72,
+            "reason": "Option definitions: -x as store_const maxfail=1 and --maxfail as int with default 0."
+          },
+          {
+            "path": "src/_pytest/main.py",
+            "start": 426,
+            "end": 440,
+            "reason": "Session hooks: shouldfail set when testsfailed >= maxfail; Failed raised at next collectstart."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_bd761c799238dfe1",
+          "path": "src/_pytest/main.py",
+          "line": 60,
+          "text": "src/_pytest/main.py:60\n57:         \"-x\",\n58:         \"--exitfirst\",\n59:         action=\"store_const\",\n60:         dest=\"maxfail\",\n61:         const=1,\n62:         help=\"exit instantly on first error or failed test.\",\n63:     )",
+          "definition": false
+        },
+        {
+          "id": "c_74154b56e2eabcd5",
+          "path": "src/_pytest/main.py",
+          "line": 65,
+          "text": "src/_pytest/main.py:65\n62:         help=\"exit instantly on first error or failed test.\",\n63:     )\n64:     group._addoption(\n65:         \"--maxfail\",\n66:         metavar=\"num\",\n67:         action=\"store\",\n68:         type=int,",
+          "definition": false
+        },
+        {
+          "id": "c_d06a5dfe5038ba38",
+          "path": "src/_pytest/main.py",
+          "line": 69,
+          "text": "src/_pytest/main.py:69\n66:         metavar=\"num\",\n67:         action=\"store\",\n68:         type=int,\n69:         dest=\"maxfail\",\n70:         default=0,\n71:         help=\"exit after first num failures or errors.\",\n72:     )",
+          "definition": false
+        },
+        {
+          "id": "c_08f1f7694786f432",
+          "path": "src/_pytest/main.py",
+          "line": 437,
+          "text": "src/_pytest/main.py:437\n434:     def pytest_runtest_logreport(self, report):\n435:         if report.failed and not hasattr(report, \"wasxfail\"):\n436:             self.testsfailed += 1\n437:             maxfail = self.config.getvalue(\"maxfail\")\n438:             if maxfail and self.testsfailed >= maxfail:\n439:                 self.shouldfail = \"stopping after %d failures\" % (self.testsfailed)\n440: ",
+          "definition": false
+        },
+        {
+          "id": "c_ddbea2c3cb5c8dff",
+          "path": "src/_pytest/main.py",
+          "line": 438,
+          "text": "src/_pytest/main.py:438\n435:         if report.failed and not hasattr(report, \"wasxfail\"):\n436:             self.testsfailed += 1\n437:             maxfail = self.config.getvalue(\"maxfail\")\n438:             if maxfail and self.testsfailed >= maxfail:\n439:                 self.shouldfail = \"stopping after %d failures\" % (self.testsfailed)\n440: \n441:     pytest_collectreport = pytest_runtest_logreport",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/pytest-dev__pytest-7220",
+      "sourceSha256": "78e1b86483084b9694259b9a67f53f896c113a87a1bb5b0db8c9e841a15e2711",
+      "collection": {
+        "totalMatched": 5,
+        "totalFiles": 512,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 5,
+          "orderChanged": true,
+          "shown": 5,
+          "remainingInPool": 0,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 4
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "pytest-lastfailed-storage",
+        "fixtureTaskId": "pytest-dev__pytest-7373",
+        "kind": "exploratory",
+        "intent": "Where does pytest record which tests failed so --lf can rerun them on the next invocation, and where is that data persisted?",
+        "pattern": "lastfailed",
+        "path": "src/_pytest",
+        "mode": "plain",
+        "referenceAnswer": "LFPlugin in src/_pytest/cacheprovider.py loads the dict from cache key 'cache/lastfailed' at startup; pytest_runtest_logreport adds failing nodeids and removes passing/skipped ones; pytest_sessionfinish persists the updated dict back with config.cache.set('cache/lastfailed', ...), stored under the .pytest_cache directory.",
+        "evidence": [
+          {
+            "path": "src/_pytest/cacheprovider.py",
+            "start": 250,
+            "end": 253,
+            "reason": "LFPlugin.__init__ loads self.lastfailed from config.cache.get('cache/lastfailed', {})."
+          },
+          {
+            "path": "src/_pytest/cacheprovider.py",
+            "start": 275,
+            "end": 279,
+            "reason": "pytest_runtest_logreport updates the lastfailed dict per test outcome."
+          },
+          {
+            "path": "src/_pytest/cacheprovider.py",
+            "start": 342,
+            "end": 350,
+            "reason": "pytest_sessionfinish writes the dict back via config.cache.set when it changed."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_d4a8f438afa5c446",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 200,
+          "text": "src/_pytest/cacheprovider.py:200\n197:                 out = yield\n198:                 res = out.get_result()\n199:                 result = res.result\n200:                 lastfailed = self.lfplugin.lastfailed\n201: \n202:                 # Only filter with known failures.\n203:                 if not self._collected_at_least_one_failure:",
+          "definition": false
+        },
+        {
+          "id": "c_7e9ef01d778fcd97",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 204,
+          "text": "src/_pytest/cacheprovider.py:204\n201: \n202:                 # Only filter with known failures.\n203:                 if not self._collected_at_least_one_failure:\n204:                     if not any(x.nodeid in lastfailed for x in result):\n205:                         return\n206:                     self.lfplugin.config.pluginmanager.register(\n207:                         LFPluginCollSkipfiles(self.lfplugin), \"lfplugin-collskip\"",
+          "definition": false
+        },
+        {
+          "id": "c_bd6365d9dacb97c1",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 215,
+          "text": "src/_pytest/cacheprovider.py:215\n212:                 result[:] = [\n213:                     x\n214:                     for x in result\n215:                     if x.nodeid in lastfailed\n216:                     # Include any passed arguments (not trivial to filter).\n217:                     or session.isinitpath(x.fspath)\n218:                     # Keep all sub-collectors.",
+          "definition": false
+        },
+        {
+          "id": "c_b2b84fa9ee0d12a3",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 251,
+          "text": "src/_pytest/cacheprovider.py:251\n248:         active_keys = \"lf\", \"failedfirst\"\n249:         self.active = any(config.getoption(key) for key in active_keys)\n250:         assert config.cache\n251:         self.lastfailed = config.cache.get(\n252:             \"cache/lastfailed\", {}\n253:         )  # type: Dict[str, bool]\n254:         self._previously_failed_count = None  # type: Optional[int]",
+          "definition": false
+        },
+        {
+          "id": "c_52801427744cab5c",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 252,
+          "text": "src/_pytest/cacheprovider.py:252\n249:         self.active = any(config.getoption(key) for key in active_keys)\n250:         assert config.cache\n251:         self.lastfailed = config.cache.get(\n252:             \"cache/lastfailed\", {}\n253:         )  # type: Dict[str, bool]\n254:         self._previously_failed_count = None  # type: Optional[int]\n255:         self._report_status = None  # type: Optional[str]",
+          "definition": false
+        },
+        {
+          "id": "c_49193b978a893341",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 267,
+          "text": "src/_pytest/cacheprovider.py:267\n264:     def get_last_failed_paths(self) -> Set[Path]:\n265:         \"\"\"Returns a set with all Paths()s of the previously failed nodeids.\"\"\"\n266:         rootpath = Path(str(self.config.rootdir))\n267:         result = {rootpath / nodeid.split(\"::\")[0] for nodeid in self.lastfailed}\n268:         return {x for x in result if x.exists()}\n269: \n270:     def pytest_report_collectionfinish(self) -> Optional[str]:",
+          "definition": false
+        },
+        {
+          "id": "c_c112bae7f08580ee",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 277,
+          "text": "src/_pytest/cacheprovider.py:277\n274: \n275:     def pytest_runtest_logreport(self, report: TestReport) -> None:\n276:         if (report.when == \"call\" and report.passed) or report.skipped:\n277:             self.lastfailed.pop(report.nodeid, None)\n278:         elif report.failed:\n279:             self.lastfailed[report.nodeid] = True\n280: ",
+          "definition": false
+        },
+        {
+          "id": "c_c4e93f5d1ff324ca",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 279,
+          "text": "src/_pytest/cacheprovider.py:279\n276:         if (report.when == \"call\" and report.passed) or report.skipped:\n277:             self.lastfailed.pop(report.nodeid, None)\n278:         elif report.failed:\n279:             self.lastfailed[report.nodeid] = True\n280: \n281:     def pytest_collectreport(self, report: CollectReport) -> None:\n282:         passed = report.outcome in (\"passed\", \"skipped\")",
+          "definition": false
+        },
+        {
+          "id": "c_bc787a65439393a6",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 284,
+          "text": "src/_pytest/cacheprovider.py:284\n281:     def pytest_collectreport(self, report: CollectReport) -> None:\n282:         passed = report.outcome in (\"passed\", \"skipped\")\n283:         if passed:\n284:             if report.nodeid in self.lastfailed:\n285:                 self.lastfailed.pop(report.nodeid)\n286:                 self.lastfailed.update((item.nodeid, True) for item in report.result)\n287:         else:",
+          "definition": false
+        },
+        {
+          "id": "c_daba4b309fd6c1ec",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 285,
+          "text": "src/_pytest/cacheprovider.py:285\n282:         passed = report.outcome in (\"passed\", \"skipped\")\n283:         if passed:\n284:             if report.nodeid in self.lastfailed:\n285:                 self.lastfailed.pop(report.nodeid)\n286:                 self.lastfailed.update((item.nodeid, True) for item in report.result)\n287:         else:\n288:             self.lastfailed[report.nodeid] = True",
+          "definition": false
+        },
+        {
+          "id": "c_6e22aa46e2ed7fc2",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 286,
+          "text": "src/_pytest/cacheprovider.py:286\n283:         if passed:\n284:             if report.nodeid in self.lastfailed:\n285:                 self.lastfailed.pop(report.nodeid)\n286:                 self.lastfailed.update((item.nodeid, True) for item in report.result)\n287:         else:\n288:             self.lastfailed[report.nodeid] = True\n289: ",
+          "definition": false
+        },
+        {
+          "id": "c_0dfccce21cbbb5ce",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 288,
+          "text": "src/_pytest/cacheprovider.py:288\n285:                 self.lastfailed.pop(report.nodeid)\n286:                 self.lastfailed.update((item.nodeid, True) for item in report.result)\n287:         else:\n288:             self.lastfailed[report.nodeid] = True\n289: \n290:     @pytest.hookimpl(hookwrapper=True, tryfirst=True)\n291:     def pytest_collection_modifyitems(",
+          "definition": false
+        },
+        {
+          "id": "c_be90709fa615916a",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 299,
+          "text": "src/_pytest/cacheprovider.py:299\n296:         if not self.active:\n297:             return\n298: \n299:         if self.lastfailed:\n300:             previously_failed = []\n301:             previously_passed = []\n302:             for item in items:",
+          "definition": false
+        },
+        {
+          "id": "c_8881310f1c70325d",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 303,
+          "text": "src/_pytest/cacheprovider.py:303\n300:             previously_failed = []\n301:             previously_passed = []\n302:             for item in items:\n303:                 if item.nodeid in self.lastfailed:\n304:                     previously_failed.append(item)\n305:                 else:\n306:                     previously_passed.append(item)",
+          "definition": false
+        },
+        {
+          "id": "c_51e3a12cfb3efbaf",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 313,
+          "text": "src/_pytest/cacheprovider.py:313\n310:                 # Running a subset of all tests with recorded failures\n311:                 # only outside of it.\n312:                 self._report_status = \"%d known failures not in selected tests\" % (\n313:                     len(self.lastfailed),\n314:                 )\n315:             else:\n316:                 if self.config.getoption(\"lf\"):",
+          "definition": false
+        },
+        {
+          "id": "c_c23c47478bf961b9",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 348,
+          "text": "src/_pytest/cacheprovider.py:348\n345:             return\n346: \n347:         assert config.cache is not None\n348:         saved_lastfailed = config.cache.get(\"cache/lastfailed\", {})\n349:         if saved_lastfailed != self.lastfailed:\n350:             config.cache.set(\"cache/lastfailed\", self.lastfailed)\n351: ",
+          "definition": false
+        },
+        {
+          "id": "c_72f3ddc911a93cd9",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 349,
+          "text": "src/_pytest/cacheprovider.py:349\n346: \n347:         assert config.cache is not None\n348:         saved_lastfailed = config.cache.get(\"cache/lastfailed\", {})\n349:         if saved_lastfailed != self.lastfailed:\n350:             config.cache.set(\"cache/lastfailed\", self.lastfailed)\n351: \n352: ",
+          "definition": false
+        },
+        {
+          "id": "c_7d1bab73442a357a",
+          "path": "src/_pytest/cacheprovider.py",
+          "line": 350,
+          "text": "src/_pytest/cacheprovider.py:350\n347:         assert config.cache is not None\n348:         saved_lastfailed = config.cache.get(\"cache/lastfailed\", {})\n349:         if saved_lastfailed != self.lastfailed:\n350:             config.cache.set(\"cache/lastfailed\", self.lastfailed)\n351: \n352: \n353: class NFPlugin:",
+          "definition": false
+        },
+        {
+          "id": "c_d420e572195505d0",
+          "path": "src/_pytest/stepwise.py",
+          "line": 43,
+          "text": "src/_pytest/stepwise.py:43\n40: \n41:         if self.active:\n42:             assert config.cache is not None\n43:             self.lastfailed = config.cache.get(\"cache/stepwise\", None)\n44:             self.skip = config.getvalue(\"stepwise_skip\")\n45: \n46:     def pytest_sessionstart(self, session: Session) -> None:",
+          "definition": false
+        },
+        {
+          "id": "c_57112d6a4077bf32",
+          "path": "src/_pytest/stepwise.py",
+          "line": 54,
+          "text": "src/_pytest/stepwise.py:54\n51:     ) -> None:\n52:         if not self.active:\n53:             return\n54:         if not self.lastfailed:\n55:             self.report_status = \"no previously failed tests, not skipping.\"\n56:             return\n57: ",
+          "definition": false
+        },
+        {
+          "id": "c_28eeda0366ba66f2",
+          "path": "src/_pytest/stepwise.py",
+          "line": 63,
+          "text": "src/_pytest/stepwise.py:63\n60: \n61:         # Make a list of all tests that have been run before the last failing one.\n62:         for item in items:\n63:             if item.nodeid == self.lastfailed:\n64:                 found = True\n65:                 break\n66:             else:",
+          "definition": false
+        },
+        {
+          "id": "c_b83bb3bf97298b00",
+          "path": "src/_pytest/stepwise.py",
+          "line": 92,
+          "text": "src/_pytest/stepwise.py:92\n89:             if self.skip:\n90:                 # Remove test from the failed ones (if it exists) and unset the skip option\n91:                 # to make sure the following tests will not be skipped.\n92:                 if report.nodeid == self.lastfailed:\n93:                     self.lastfailed = None\n94: \n95:                 self.skip = False",
+          "definition": false
+        },
+        {
+          "id": "c_de103df1fcf6e4d3",
+          "path": "src/_pytest/stepwise.py",
+          "line": 93,
+          "text": "src/_pytest/stepwise.py:93\n90:                 # Remove test from the failed ones (if it exists) and unset the skip option\n91:                 # to make sure the following tests will not be skipped.\n92:                 if report.nodeid == self.lastfailed:\n93:                     self.lastfailed = None\n94: \n95:                 self.skip = False\n96:             else:",
+          "definition": false
+        },
+        {
+          "id": "c_94325d70043d0a01",
+          "path": "src/_pytest/stepwise.py",
+          "line": 98,
+          "text": "src/_pytest/stepwise.py:98\n95:                 self.skip = False\n96:             else:\n97:                 # Mark test as the last failing and interrupt the test session.\n98:                 self.lastfailed = report.nodeid\n99:                 assert self.session is not None\n100:                 self.session.shouldstop = (\n101:                     \"Test failed, continuing from this test next run.\"",
+          "definition": false
+        },
+        {
+          "id": "c_a68eab6c9e71ad07",
+          "path": "src/_pytest/stepwise.py",
+          "line": 108,
+          "text": "src/_pytest/stepwise.py:108\n105:             # If the test was actually run and did pass.\n106:             if report.when == \"call\":\n107:                 # Remove test from the failed ones, if exists.\n108:                 if report.nodeid == self.lastfailed:\n109:                     self.lastfailed = None\n110: \n111:     def pytest_report_collectionfinish(self) -> Optional[str]:",
+          "definition": false
+        },
+        {
+          "id": "c_a546268cb2088ba3",
+          "path": "src/_pytest/stepwise.py",
+          "line": 109,
+          "text": "src/_pytest/stepwise.py:109\n106:             if report.when == \"call\":\n107:                 # Remove test from the failed ones, if exists.\n108:                 if report.nodeid == self.lastfailed:\n109:                     self.lastfailed = None\n110: \n111:     def pytest_report_collectionfinish(self) -> Optional[str]:\n112:         if self.active and self.config.getoption(\"verbose\") >= 0 and self.report_status:",
+          "definition": false
+        },
+        {
+          "id": "c_b37b6b31c6bc0a10",
+          "path": "src/_pytest/stepwise.py",
+          "line": 119,
+          "text": "src/_pytest/stepwise.py:119\n116:     def pytest_sessionfinish(self, session: Session) -> None:\n117:         assert self.config.cache is not None\n118:         if self.active:\n119:             self.config.cache.set(\"cache/stepwise\", self.lastfailed)\n120:         else:\n121:             # Clear the list of failing tests if the plugin is not active.\n122:             self.config.cache.set(\"cache/stepwise\", [])",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/pytest-dev__pytest-7373",
+      "sourceSha256": "6b5da1416ab4ca7073c6bb9a16b69f5fc3fcc760d320748ce0c065eda4369ddc",
+      "collection": {
+        "totalMatched": 20,
+        "totalFiles": 533,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 27,
+          "orderChanged": true,
+          "shown": 20,
+          "remainingInPool": 7,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 27,
+          "cursor": "jev_c_fef73980-c566-4081-863b-7e856e182d02"
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "pytest-assert-rewrite-choice",
+        "fixtureTaskId": "pytest-dev__pytest-7373",
+        "kind": "exploratory",
+        "intent": "How does pytest's import hook decide which modules get assertion rewriting applied?",
+        "pattern": "rewrite",
+        "path": "src/_pytest",
+        "mode": "plain",
+        "referenceAnswer": "AssertionRewritingHook._should_rewrite in src/_pytest/assertion/rewrite.py: it always rewrites conftest.py files, rewrites files that were specified on the command line (session initial paths), rewrites files matching the python_files test-naming glob patterns via fnmatch_ex, and otherwise falls back to modules explicitly registered through register_assert_rewrite (_is_marked_for_rewrite).",
+        "evidence": [
+          {
+            "path": "src/_pytest/assertion/rewrite.py",
+            "start": 211,
+            "end": 232,
+            "reason": "_should_rewrite: conftest, initial-path, python_files pattern, and marked-for-rewrite checks."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_4106e41193a435e5",
+          "path": "src/_pytest/terminal.py",
+          "line": 436,
+          "text": "src/_pytest/terminal.py:436\n433:         self.ensure_newline()\n434:         self._tw.line(line, **markup)\n435: \n436:     def rewrite(self, line: str, **markup: bool) -> None:\n437:         \"\"\"\n438:         Rewinds the terminal cursor to the beginning and writes the given line.\n439: ",
+          "definition": false
+        },
+        {
+          "id": "c_6d30c3a5bda98d43",
+          "path": "src/_pytest/terminal.py",
+          "line": 674,
+          "text": "src/_pytest/terminal.py:674\n671:         if self._numcollected > selected > 0:\n672:             line += \" / %d selected\" % selected\n673:         if self.isatty:\n674:             self.rewrite(line, bold=True, erase=True)\n675:             if final:\n676:                 self.write(\"\\n\")\n677:         else:",
+          "definition": false
+        },
+        {
+          "id": "c_9532200128d57873",
+          "path": "src/_pytest/warning_types.py",
+          "line": 19,
+          "text": "src/_pytest/warning_types.py:19\n16:     __module__ = \"pytest\"\n17: \n18: \n19: class PytestAssertRewriteWarning(PytestWarning):\n20:     \"\"\"Warning emitted by the pytest assert rewrite module.\"\"\"\n21: \n22:     __module__ = \"pytest\"",
+          "definition": false
+        },
+        {
+          "id": "c_e7ba172c72ea25c0",
+          "path": "src/_pytest/warning_types.py",
+          "line": 20,
+          "text": "src/_pytest/warning_types.py:20\n17: \n18: \n19: class PytestAssertRewriteWarning(PytestWarning):\n20:     \"\"\"Warning emitted by the pytest assert rewrite module.\"\"\"\n21: \n22:     __module__ = \"pytest\"\n23: ",
+          "definition": false
+        },
+        {
+          "id": "c_810e8879cad22f95",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 10,
+          "text": "src/_pytest/assertion/__init__.py:10\n7: from typing import List\n8: from typing import Optional\n9: \n10: from _pytest.assertion import rewrite\n11: from _pytest.assertion import truncate\n12: from _pytest.assertion import util\n13: from _pytest.assertion.rewrite import assertstate_key",
+          "definition": false
+        },
+        {
+          "id": "c_ec6e53815ad9f4dd",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 13,
+          "text": "src/_pytest/assertion/__init__.py:13\n10: from _pytest.assertion import rewrite\n11: from _pytest.assertion import truncate\n12: from _pytest.assertion import util\n13: from _pytest.assertion.rewrite import assertstate_key\n14: from _pytest.compat import TYPE_CHECKING\n15: from _pytest.config import Config\n16: from _pytest.config import hookimpl",
+          "definition": false
+        },
+        {
+          "id": "c_ae34b0ba0633ea0a",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 30,
+          "text": "src/_pytest/assertion/__init__.py:30\n27:         \"--assert\",\n28:         action=\"store\",\n29:         dest=\"assertmode\",\n30:         choices=(\"rewrite\", \"plain\"),\n31:         default=\"rewrite\",\n32:         metavar=\"MODE\",\n33:         help=(",
+          "definition": false
+        },
+        {
+          "id": "c_38389f3bd29ff3da",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 31,
+          "text": "src/_pytest/assertion/__init__.py:31\n28:         action=\"store\",\n29:         dest=\"assertmode\",\n30:         choices=(\"rewrite\", \"plain\"),\n31:         default=\"rewrite\",\n32:         metavar=\"MODE\",\n33:         help=(\n34:             \"Control assertion debugging tools.\\n\"",
+          "definition": false
+        },
+        {
+          "id": "c_15e3308bc0b72034",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 36,
+          "text": "src/_pytest/assertion/__init__.py:36\n33:         help=(\n34:             \"Control assertion debugging tools.\\n\"\n35:             \"'plain' performs no assertion debugging.\\n\"\n36:             \"'rewrite' (the default) rewrites assert statements in test modules\"\n37:             \" on import to provide assert expression information.\"\n38:         ),\n39:     )",
+          "definition": false
+        },
+        {
+          "id": "c_fa3b435d0e966546",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 49,
+          "text": "src/_pytest/assertion/__init__.py:49\n46:     )\n47: \n48: \n49: def register_assert_rewrite(*names: str) -> None:\n50:     \"\"\"Register one or more module names to be rewritten on import.\n51: \n52:     This function will make sure that this module or all modules inside",
+          "definition": false
+        },
+        {
+          "id": "c_66345f30bd2b763c",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 65,
+          "text": "src/_pytest/assertion/__init__.py:65\n62:             msg = \"expected module names as *args, got {0} instead\"\n63:             raise TypeError(msg.format(repr(names)))\n64:     for hook in sys.meta_path:\n65:         if isinstance(hook, rewrite.AssertionRewritingHook):\n66:             importhook = hook\n67:             break\n68:     else:",
+          "definition": false
+        },
+        {
+          "id": "c_f31963f14302d55c",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 69,
+          "text": "src/_pytest/assertion/__init__.py:69\n66:             importhook = hook\n67:             break\n68:     else:\n69:         # TODO(typing): Add a protocol for mark_rewrite() and use it\n70:         # for importhook and for PytestPluginManager.rewrite_hook.\n71:         importhook = DummyRewriteHook()  # type: ignore\n72:     importhook.mark_rewrite(*names)",
+          "definition": false
+        },
+        {
+          "id": "c_edab7a2749ca1d5f",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 70,
+          "text": "src/_pytest/assertion/__init__.py:70\n67:             break\n68:     else:\n69:         # TODO(typing): Add a protocol for mark_rewrite() and use it\n70:         # for importhook and for PytestPluginManager.rewrite_hook.\n71:         importhook = DummyRewriteHook()  # type: ignore\n72:     importhook.mark_rewrite(*names)\n73: ",
+          "definition": false
+        },
+        {
+          "id": "c_e37aaa3ffd6e13ee",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 71,
+          "text": "src/_pytest/assertion/__init__.py:71\n68:     else:\n69:         # TODO(typing): Add a protocol for mark_rewrite() and use it\n70:         # for importhook and for PytestPluginManager.rewrite_hook.\n71:         importhook = DummyRewriteHook()  # type: ignore\n72:     importhook.mark_rewrite(*names)\n73: \n74: ",
+          "definition": false
+        },
+        {
+          "id": "c_9491178101388f17",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 72,
+          "text": "src/_pytest/assertion/__init__.py:72\n69:         # TODO(typing): Add a protocol for mark_rewrite() and use it\n70:         # for importhook and for PytestPluginManager.rewrite_hook.\n71:         importhook = DummyRewriteHook()  # type: ignore\n72:     importhook.mark_rewrite(*names)\n73: \n74: \n75: class DummyRewriteHook:",
+          "definition": false
+        },
+        {
+          "id": "c_7f1d2e193dd1d71d",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 75,
+          "text": "src/_pytest/assertion/__init__.py:75\n72:     importhook.mark_rewrite(*names)\n73: \n74: \n75: class DummyRewriteHook:\n76:     \"\"\"A no-op import hook for when rewriting is disabled.\"\"\"\n77: \n78:     def mark_rewrite(self, *names: str) -> None:",
+          "definition": false
+        },
+        {
+          "id": "c_5d364da378e26175",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 78,
+          "text": "src/_pytest/assertion/__init__.py:78\n75: class DummyRewriteHook:\n76:     \"\"\"A no-op import hook for when rewriting is disabled.\"\"\"\n77: \n78:     def mark_rewrite(self, *names: str) -> None:\n79:         pass\n80: \n81: ",
+          "definition": false
+        },
+        {
+          "id": "c_2bc8ff336911a25f",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 88,
+          "text": "src/_pytest/assertion/__init__.py:88\n85:     def __init__(self, config: Config, mode) -> None:\n86:         self.mode = mode\n87:         self.trace = config.trace.root.get(\"assertion\")\n88:         self.hook = None  # type: Optional[rewrite.AssertionRewritingHook]\n89: \n90: \n91: def install_importhook(config: Config) -> rewrite.AssertionRewritingHook:",
+          "definition": false
+        },
+        {
+          "id": "c_4663ab388951e81f",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 91,
+          "text": "src/_pytest/assertion/__init__.py:91\n88:         self.hook = None  # type: Optional[rewrite.AssertionRewritingHook]\n89: \n90: \n91: def install_importhook(config: Config) -> rewrite.AssertionRewritingHook:\n92:     \"\"\"Try to install the rewrite hook, raise SystemError if it fails.\"\"\"\n93:     config._store[assertstate_key] = AssertionState(config, \"rewrite\")\n94:     config._store[assertstate_key].hook = hook = rewrite.AssertionRewritingHook(config)",
+          "definition": false
+        },
+        {
+          "id": "c_82d86b44dab47af6",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 92,
+          "text": "src/_pytest/assertion/__init__.py:92\n89: \n90: \n91: def install_importhook(config: Config) -> rewrite.AssertionRewritingHook:\n92:     \"\"\"Try to install the rewrite hook, raise SystemError if it fails.\"\"\"\n93:     config._store[assertstate_key] = AssertionState(config, \"rewrite\")\n94:     config._store[assertstate_key].hook = hook = rewrite.AssertionRewritingHook(config)\n95:     sys.meta_path.insert(0, hook)",
+          "definition": false
+        },
+        {
+          "id": "c_22b18acfa7ceeaa7",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 93,
+          "text": "src/_pytest/assertion/__init__.py:93\n90: \n91: def install_importhook(config: Config) -> rewrite.AssertionRewritingHook:\n92:     \"\"\"Try to install the rewrite hook, raise SystemError if it fails.\"\"\"\n93:     config._store[assertstate_key] = AssertionState(config, \"rewrite\")\n94:     config._store[assertstate_key].hook = hook = rewrite.AssertionRewritingHook(config)\n95:     sys.meta_path.insert(0, hook)\n96:     config._store[assertstate_key].trace(\"installed rewrite import hook\")",
+          "definition": false
+        },
+        {
+          "id": "c_200b88f7dec524df",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 94,
+          "text": "src/_pytest/assertion/__init__.py:94\n91: def install_importhook(config: Config) -> rewrite.AssertionRewritingHook:\n92:     \"\"\"Try to install the rewrite hook, raise SystemError if it fails.\"\"\"\n93:     config._store[assertstate_key] = AssertionState(config, \"rewrite\")\n94:     config._store[assertstate_key].hook = hook = rewrite.AssertionRewritingHook(config)\n95:     sys.meta_path.insert(0, hook)\n96:     config._store[assertstate_key].trace(\"installed rewrite import hook\")\n97: ",
+          "definition": false
+        },
+        {
+          "id": "c_e0c4559b887d0de9",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 96,
+          "text": "src/_pytest/assertion/__init__.py:96\n93:     config._store[assertstate_key] = AssertionState(config, \"rewrite\")\n94:     config._store[assertstate_key].hook = hook = rewrite.AssertionRewritingHook(config)\n95:     sys.meta_path.insert(0, hook)\n96:     config._store[assertstate_key].trace(\"installed rewrite import hook\")\n97: \n98:     def undo() -> None:\n99:         hook = config._store[assertstate_key].hook",
+          "definition": false
+        },
+        {
+          "id": "c_1869e1296f8eda87",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 121,
+          "text": "src/_pytest/assertion/__init__.py:121\n118: def pytest_runtest_protocol(item: Item) -> Generator[None, None, None]:\n119:     \"\"\"Setup the pytest_assertrepr_compare and pytest_assertion_pass hooks\n120: \n121:     The rewrite module will use util._reprcompare if\n122:     it exists to use custom reporting via the\n123:     pytest_assertrepr_compare hook.  This sets up this custom\n124:     comparison for the test.",
+          "definition": false
+        },
+        {
+          "id": "c_c3d2c74304f0f93d",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 136,
+          "text": "src/_pytest/assertion/__init__.py:136\n133:           (eg. if running in verbose mode).\n134:         * Embedded newlines are escaped to help util.format_explanation()\n135:           later.\n136:         * If the rewrite mode is used embedded %-characters are replaced\n137:           to protect later % formatting.\n138: \n139:         The result can be formatted by util.format_explanation() for",
+          "definition": false
+        },
+        {
+          "id": "c_1e9d5da1cd5e7af8",
+          "path": "src/_pytest/assertion/__init__.py",
+          "line": 150,
+          "text": "src/_pytest/assertion/__init__.py:150\n147:                 new_expl = truncate.truncate_if_required(new_expl, item)\n148:                 new_expl = [line.replace(\"\\n\", \"\\\\n\") for line in new_expl]\n149:                 res = \"\\n~\".join(new_expl)\n150:                 if item.config.getvalue(\"assertmode\") == \"rewrite\":\n151:                     res = res.replace(\"%\", \"%%\")\n152:                 return res\n153:         return None",
+          "definition": false
+        },
+        {
+          "id": "c_b9a4c6be96c4ad86",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 1,
+          "text": "src/_pytest/assertion/rewrite.py:1\n1: \"\"\"Rewrite assertion AST to produce nice error messages\"\"\"\n2: import ast\n3: import errno\n4: import functools",
+          "definition": false
+        },
+        {
+          "id": "c_76967bd251fbd380",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 57,
+          "text": "src/_pytest/assertion/rewrite.py:57\n54: \n55: \n56: class AssertionRewritingHook(importlib.abc.MetaPathFinder, importlib.abc.Loader):\n57:     \"\"\"PEP302/PEP451 import hook which rewrites asserts.\"\"\"\n58: \n59:     def __init__(self, config: Config) -> None:\n60:         self.config = config",
+          "definition": false
+        },
+        {
+          "id": "c_5d43b07fcf8e5739",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 67,
+          "text": "src/_pytest/assertion/rewrite.py:67\n64:             self.fnpats = [\"test_*.py\", \"*_test.py\"]\n65:         self.session = None  # type: Optional[Session]\n66:         self._rewritten_names = set()  # type: Set[str]\n67:         self._must_rewrite = set()  # type: Set[str]\n68:         # flag to guard against trying to rewrite a pyc file while we are already writing another pyc file,\n69:         # which might result in infinite recursion (#3506)\n70:         self._writing_pyc = False",
+          "definition": false
+        },
+        {
+          "id": "c_e7fd3d803d05947c",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 68,
+          "text": "src/_pytest/assertion/rewrite.py:68\n65:         self.session = None  # type: Optional[Session]\n66:         self._rewritten_names = set()  # type: Set[str]\n67:         self._must_rewrite = set()  # type: Set[str]\n68:         # flag to guard against trying to rewrite a pyc file while we are already writing another pyc file,\n69:         # which might result in infinite recursion (#3506)\n70:         self._writing_pyc = False\n71:         self._basenames_to_check_rewrite = {\"conftest\"}",
+          "definition": false
+        },
+        {
+          "id": "c_0dfb7d87cb755d50",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 71,
+          "text": "src/_pytest/assertion/rewrite.py:71\n68:         # flag to guard against trying to rewrite a pyc file while we are already writing another pyc file,\n69:         # which might result in infinite recursion (#3506)\n70:         self._writing_pyc = False\n71:         self._basenames_to_check_rewrite = {\"conftest\"}\n72:         self._marked_for_rewrite_cache = {}  # type: Dict[str, bool]\n73:         self._session_paths_checked = False\n74: ",
+          "definition": false
+        },
+        {
+          "id": "c_ee2e15f871b2154f",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 72,
+          "text": "src/_pytest/assertion/rewrite.py:72\n69:         # which might result in infinite recursion (#3506)\n70:         self._writing_pyc = False\n71:         self._basenames_to_check_rewrite = {\"conftest\"}\n72:         self._marked_for_rewrite_cache = {}  # type: Dict[str, bool]\n73:         self._session_paths_checked = False\n74: \n75:     def set_session(self, session: Optional[Session]) -> None:",
+          "definition": false
+        },
+        {
+          "id": "c_ac041051d7b33f52",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 91,
+          "text": "src/_pytest/assertion/rewrite.py:91\n88:         if self._writing_pyc:\n89:             return None\n90:         state = self.config._store[assertstate_key]\n91:         if self._early_rewrite_bailout(name, state):\n92:             return None\n93:         state.trace(\"find_module called for: %s\" % name)\n94: ",
+          "definition": false
+        },
+        {
+          "id": "c_bbc18d032e823985",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 101,
+          "text": "src/_pytest/assertion/rewrite.py:101\n98:             # the import machinery could not find a file to import\n99:             spec is None\n100:             # this is a namespace package (without `__init__.py`)\n101:             # there's nothing to rewrite there\n102:             # python3.5 - python3.6: `namespace`\n103:             # python3.7+: `None`\n104:             or spec.origin == \"namespace\"",
+          "definition": false
+        },
+        {
+          "id": "c_a61427037a8786aa",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 106,
+          "text": "src/_pytest/assertion/rewrite.py:106\n103:             # python3.7+: `None`\n104:             or spec.origin == \"namespace\"\n105:             or spec.origin is None\n106:             # we can only rewrite source files\n107:             or not isinstance(spec.loader, importlib.machinery.SourceFileLoader)\n108:             # if the file doesn't exist, we can't rewrite it\n109:             or not os.path.exists(spec.origin)",
+          "definition": false
+        },
+        {
+          "id": "c_1ed0fed9d5d5b6d5",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 108,
+          "text": "src/_pytest/assertion/rewrite.py:108\n105:             or spec.origin is None\n106:             # we can only rewrite source files\n107:             or not isinstance(spec.loader, importlib.machinery.SourceFileLoader)\n108:             # if the file doesn't exist, we can't rewrite it\n109:             or not os.path.exists(spec.origin)\n110:         ):\n111:             return None",
+          "definition": false
+        },
+        {
+          "id": "c_58c5d0df2dadf064",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 115,
+          "text": "src/_pytest/assertion/rewrite.py:115\n112:         else:\n113:             fn = spec.origin\n114: \n115:         if not self._should_rewrite(name, fn, state):\n116:             return None\n117: \n118:         return importlib.util.spec_from_file_location(",
+          "definition": false
+        },
+        {
+          "id": "c_389f620fcc78cee4",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 138,
+          "text": "src/_pytest/assertion/rewrite.py:138\n135: \n136:         self._rewritten_names.add(module.__name__)\n137: \n138:         # The requested module looks like a test file, so rewrite it. This is\n139:         # the most magical part of the process: load the source, rewrite the\n140:         # asserts, and load the rewritten source. We also cache the rewritten\n141:         # module code in a special pyc. We must be aware of the possibility of",
+          "definition": false
+        },
+        {
+          "id": "c_b16159fe51afe5d1",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 139,
+          "text": "src/_pytest/assertion/rewrite.py:139\n136:         self._rewritten_names.add(module.__name__)\n137: \n138:         # The requested module looks like a test file, so rewrite it. This is\n139:         # the most magical part of the process: load the source, rewrite the\n140:         # asserts, and load the rewritten source. We also cache the rewritten\n141:         # module code in a special pyc. We must be aware of the possibility of\n142:         # concurrent pytest processes rewriting and loading pycs. To avoid",
+          "definition": false
+        },
+        {
+          "id": "c_ffd62ee5b8ded25f",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 161,
+          "text": "src/_pytest/assertion/rewrite.py:161\n158:         co = _read_pyc(fn, pyc, state.trace)\n159:         if co is None:\n160:             state.trace(\"rewriting {!r}\".format(fn))\n161:             source_stat, co = _rewrite_test(fn, self.config)\n162:             if write:\n163:                 self._writing_pyc = True\n164:                 try:",
+          "definition": false
+        },
+        {
+          "id": "c_ec0a67c29e822772",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 172,
+          "text": "src/_pytest/assertion/rewrite.py:172\n169:             state.trace(\"found cached rewritten pyc for {}\".format(fn))\n170:         exec(co, module.__dict__)\n171: \n172:     def _early_rewrite_bailout(self, name: str, state: \"AssertionState\") -> bool:\n173:         \"\"\"This is a fast way to get out of rewriting modules.\n174: \n175:         Profiling has shown that the call to PathFinder.find_spec (inside of",
+          "definition": false
+        },
+        {
+          "id": "c_9cef562bad334ecc",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 187,
+          "text": "src/_pytest/assertion/rewrite.py:187\n184:                 #     ['c:', 'projects', 'my_project', 'path.py']\n185:                 parts = str(initial_path).split(os.path.sep)\n186:                 # add 'path' to basenames to be checked.\n187:                 self._basenames_to_check_rewrite.add(os.path.splitext(parts[-1])[0])\n188: \n189:         # Note: conftest already by default in _basenames_to_check_rewrite.\n190:         parts = name.split(\".\")",
+          "definition": false
+        },
+        {
+          "id": "c_147595737b85a43a",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 189,
+          "text": "src/_pytest/assertion/rewrite.py:189\n186:                 # add 'path' to basenames to be checked.\n187:                 self._basenames_to_check_rewrite.add(os.path.splitext(parts[-1])[0])\n188: \n189:         # Note: conftest already by default in _basenames_to_check_rewrite.\n190:         parts = name.split(\".\")\n191:         if parts[-1] in self._basenames_to_check_rewrite:\n192:             return False",
+          "definition": false
+        },
+        {
+          "id": "c_c3ccddbc431e3bd0",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 191,
+          "text": "src/_pytest/assertion/rewrite.py:191\n188: \n189:         # Note: conftest already by default in _basenames_to_check_rewrite.\n190:         parts = name.split(\".\")\n191:         if parts[-1] in self._basenames_to_check_rewrite:\n192:             return False\n193: \n194:         # For matching the name it must be as if it was a filename.",
+          "definition": false
+        },
+        {
+          "id": "c_55a810edf03e84d6",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 205,
+          "text": "src/_pytest/assertion/rewrite.py:205\n202:             if fnmatch_ex(pat, path):\n203:                 return False\n204: \n205:         if self._is_marked_for_rewrite(name, state):\n206:             return False\n207: \n208:         state.trace(\"early skip of rewriting module: {}\".format(name))",
+          "definition": false
+        },
+        {
+          "id": "c_892c3785e9f3b2fc",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 211,
+          "text": "src/_pytest/assertion/rewrite.py:211\n208:         state.trace(\"early skip of rewriting module: {}\".format(name))\n209:         return True\n210: \n211:     def _should_rewrite(self, name: str, fn: str, state: \"AssertionState\") -> bool:\n212:         # always rewrite conftest files\n213:         if os.path.basename(fn) == \"conftest.py\":\n214:             state.trace(\"rewriting conftest file: {!r}\".format(fn))",
+          "definition": false
+        },
+        {
+          "id": "c_6e07c9eb1451afa9",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 212,
+          "text": "src/_pytest/assertion/rewrite.py:212\n209:         return True\n210: \n211:     def _should_rewrite(self, name: str, fn: str, state: \"AssertionState\") -> bool:\n212:         # always rewrite conftest files\n213:         if os.path.basename(fn) == \"conftest.py\":\n214:             state.trace(\"rewriting conftest file: {!r}\".format(fn))\n215:             return True",
+          "definition": false
+        },
+        {
+          "id": "c_22a48e332f7eccca",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 232,
+          "text": "src/_pytest/assertion/rewrite.py:232\n229:                 state.trace(\"matched test file {!r}\".format(fn))\n230:                 return True\n231: \n232:         return self._is_marked_for_rewrite(name, state)\n233: \n234:     def _is_marked_for_rewrite(self, name: str, state: \"AssertionState\") -> bool:\n235:         try:",
+          "definition": false
+        },
+        {
+          "id": "c_a0994a3434d8f68c",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 234,
+          "text": "src/_pytest/assertion/rewrite.py:234\n231: \n232:         return self._is_marked_for_rewrite(name, state)\n233: \n234:     def _is_marked_for_rewrite(self, name: str, state: \"AssertionState\") -> bool:\n235:         try:\n236:             return self._marked_for_rewrite_cache[name]\n237:         except KeyError:",
+          "definition": false
+        },
+        {
+          "id": "c_4c8a0336116f3f85",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 236,
+          "text": "src/_pytest/assertion/rewrite.py:236\n233: \n234:     def _is_marked_for_rewrite(self, name: str, state: \"AssertionState\") -> bool:\n235:         try:\n236:             return self._marked_for_rewrite_cache[name]\n237:         except KeyError:\n238:             for marked in self._must_rewrite:\n239:                 if name == marked or name.startswith(marked + \".\"):",
+          "definition": false
+        },
+        {
+          "id": "c_8de17ad3019a18b4",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 238,
+          "text": "src/_pytest/assertion/rewrite.py:238\n235:         try:\n236:             return self._marked_for_rewrite_cache[name]\n237:         except KeyError:\n238:             for marked in self._must_rewrite:\n239:                 if name == marked or name.startswith(marked + \".\"):\n240:                     state.trace(\n241:                         \"matched marked file {!r} (from {!r})\".format(name, marked)",
+          "definition": false
+        },
+        {
+          "id": "c_9e938966d67220d3",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 243,
+          "text": "src/_pytest/assertion/rewrite.py:243\n240:                     state.trace(\n241:                         \"matched marked file {!r} (from {!r})\".format(name, marked)\n242:                     )\n243:                     self._marked_for_rewrite_cache[name] = True\n244:                     return True\n245: \n246:             self._marked_for_rewrite_cache[name] = False",
+          "definition": false
+        },
+        {
+          "id": "c_495d41450b631df6",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 246,
+          "text": "src/_pytest/assertion/rewrite.py:246\n243:                     self._marked_for_rewrite_cache[name] = True\n244:                     return True\n245: \n246:             self._marked_for_rewrite_cache[name] = False\n247:             return False\n248: \n249:     def mark_rewrite(self, *names: str) -> None:",
+          "definition": false
+        },
+        {
+          "id": "c_284270e4f4fd409d",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 249,
+          "text": "src/_pytest/assertion/rewrite.py:249\n246:             self._marked_for_rewrite_cache[name] = False\n247:             return False\n248: \n249:     def mark_rewrite(self, *names: str) -> None:\n250:         \"\"\"Mark import names as needing to be rewritten.\n251: \n252:         The named module or package as well as any nested modules will",
+          "definition": false
+        },
+        {
+          "id": "c_b14353b57014f30d",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 260,
+          "text": "src/_pytest/assertion/rewrite.py:260\n257:         )\n258:         for name in already_imported:\n259:             mod = sys.modules[name]\n260:             if not AssertionRewriter.is_rewrite_disabled(\n261:                 mod.__doc__ or \"\"\n262:             ) and not isinstance(mod.__loader__, type(self)):\n263:                 self._warn_already_imported(name)",
+          "definition": false
+        },
+        {
+          "id": "c_4dd70902ade2dbff",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 264,
+          "text": "src/_pytest/assertion/rewrite.py:264\n261:                 mod.__doc__ or \"\"\n262:             ) and not isinstance(mod.__loader__, type(self)):\n263:                 self._warn_already_imported(name)\n264:         self._must_rewrite.update(names)\n265:         self._marked_for_rewrite_cache.clear()\n266: \n267:     def _warn_already_imported(self, name: str) -> None:",
+          "definition": false
+        },
+        {
+          "id": "c_3ccb715880609921",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 265,
+          "text": "src/_pytest/assertion/rewrite.py:265\n262:             ) and not isinstance(mod.__loader__, type(self)):\n263:                 self._warn_already_imported(name)\n264:         self._must_rewrite.update(names)\n265:         self._marked_for_rewrite_cache.clear()\n266: \n267:     def _warn_already_imported(self, name: str) -> None:\n268:         from _pytest.warning_types import PytestAssertRewriteWarning",
+          "definition": false
+        },
+        {
+          "id": "c_4bb5435a10930758",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 268,
+          "text": "src/_pytest/assertion/rewrite.py:268\n265:         self._marked_for_rewrite_cache.clear()\n266: \n267:     def _warn_already_imported(self, name: str) -> None:\n268:         from _pytest.warning_types import PytestAssertRewriteWarning\n269:         from _pytest.warnings import _issue_warning_captured\n270: \n271:         _issue_warning_captured(",
+          "definition": false
+        },
+        {
+          "id": "c_e13b3cb4f7c08c6e",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 272,
+          "text": "src/_pytest/assertion/rewrite.py:272\n269:         from _pytest.warnings import _issue_warning_captured\n270: \n271:         _issue_warning_captured(\n272:             PytestAssertRewriteWarning(\n273:                 \"Module already imported so cannot be rewritten: %s\" % name\n274:             ),\n275:             self.config.hook,",
+          "definition": false
+        },
+        {
+          "id": "c_8eb2ec6e38f7f281",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 352,
+          "text": "src/_pytest/assertion/rewrite.py:352\n349:         return True\n350: \n351: \n352: def _rewrite_test(fn: Path, config: Config) -> Tuple[os.stat_result, types.CodeType]:\n353:     \"\"\"read and rewrite *fn* and return the code object.\"\"\"\n354:     fn_ = fspath(fn)\n355:     stat = os.stat(fn_)",
+          "definition": false
+        },
+        {
+          "id": "c_6b0d3713819f6d88",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 353,
+          "text": "src/_pytest/assertion/rewrite.py:353\n350: \n351: \n352: def _rewrite_test(fn: Path, config: Config) -> Tuple[os.stat_result, types.CodeType]:\n353:     \"\"\"read and rewrite *fn* and return the code object.\"\"\"\n354:     fn_ = fspath(fn)\n355:     stat = os.stat(fn_)\n356:     with open(fn_, \"rb\") as f:",
+          "definition": false
+        },
+        {
+          "id": "c_278ab8d452274f8a",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 359,
+          "text": "src/_pytest/assertion/rewrite.py:359\n356:     with open(fn_, \"rb\") as f:\n357:         source = f.read()\n358:     tree = ast.parse(source, filename=fn_)\n359:     rewrite_asserts(tree, source, fn_, config)\n360:     co = compile(tree, fn_, \"exec\", dont_inherit=True)\n361:     return stat, co\n362: ",
+          "definition": false
+        },
+        {
+          "id": "c_413c504d5650fa4b",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 403,
+          "text": "src/_pytest/assertion/rewrite.py:403\n400:         return co\n401: \n402: \n403: def rewrite_asserts(\n404:     mod: ast.Module,\n405:     source: bytes,\n406:     module_path: Optional[str] = None,",
+          "definition": false
+        },
+        {
+          "id": "c_f4b59c035de5f04e",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 409,
+          "text": "src/_pytest/assertion/rewrite.py:409\n406:     module_path: Optional[str] = None,\n407:     config: Optional[Config] = None,\n408: ) -> None:\n409:     \"\"\"Rewrite the assert statements in mod.\"\"\"\n410:     AssertionRewriter(module_path, config, source).run(mod)\n411: \n412: ",
+          "definition": false
+        },
+        {
+          "id": "c_50993440f42960b1",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 410,
+          "text": "src/_pytest/assertion/rewrite.py:410\n407:     config: Optional[Config] = None,\n408: ) -> None:\n409:     \"\"\"Rewrite the assert statements in mod.\"\"\"\n410:     AssertionRewriter(module_path, config, source).run(mod)\n411: \n412: \n413: def _saferepr(obj: object) -> str:",
+          "definition": false
+        },
+        {
+          "id": "c_f64ec3215629b776",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 597,
+          "text": "src/_pytest/assertion/rewrite.py:597\n594:     return ret\n595: \n596: \n597: class AssertionRewriter(ast.NodeVisitor):\n598:     \"\"\"Assertion rewriting implementation.\n599: \n600:     The main entrypoint is to call .run() with an ast.Module instance,",
+          "definition": false
+        },
+        {
+          "id": "c_ac4fab872443ba2d",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 601,
+          "text": "src/_pytest/assertion/rewrite.py:601\n598:     \"\"\"Assertion rewriting implementation.\n599: \n600:     The main entrypoint is to call .run() with an ast.Module instance,\n601:     this will then find all the assert statements and rewrite them to\n602:     provide intermediate values and a detailed assertion error.  See\n603:     http://pybites.blogspot.be/2011/07/behind-scenes-of-pytests-new-assertion.html\n604:     for an overview of how this works.",
+          "definition": false
+        },
+        {
+          "id": "c_a5c6c724adbaa6a3",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 610,
+          "text": "src/_pytest/assertion/rewrite.py:610\n607:     statements in an ast.Module and for each ast.Assert statement it\n608:     finds call .visit() with it.  Then .visit_Assert() takes over and\n609:     is responsible for creating new ast statements to replace the\n610:     original assert statement: it rewrites the test of an assertion\n611:     to provide intermediate values and replace it with an if statement\n612:     which raises an assertion error with a detailed explanation in\n613:     case the expression is false and calls pytest_assertion_pass hook",
+          "definition": false
+        },
+        {
+          "id": "c_169bf7d816b025fe",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 670,
+          "text": "src/_pytest/assertion/rewrite.py:670\n667:         return _get_assertion_exprs(self.source)\n668: \n669:     def run(self, mod: ast.Module) -> None:\n670:         \"\"\"Find all assert statements in *mod* and rewrite them.\"\"\"\n671:         if not mod.body:\n672:             # Nothing to do.\n673:             return",
+          "definition": false
+        },
+        {
+          "id": "c_72486ee386cab275",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 678,
+          "text": "src/_pytest/assertion/rewrite.py:678\n675:         # docstrings and __future__ imports.\n676:         aliases = [\n677:             ast.alias(\"builtins\", \"@py_builtins\"),\n678:             ast.alias(\"_pytest.assertion.rewrite\", \"@pytest_ar\"),\n679:         ]\n680:         doc = getattr(mod, \"docstring\", None)\n681:         expect_docstring = doc is None",
+          "definition": false
+        },
+        {
+          "id": "c_b93009fc3e979d72",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 682,
+          "text": "src/_pytest/assertion/rewrite.py:682\n679:         ]\n680:         doc = getattr(mod, \"docstring\", None)\n681:         expect_docstring = doc is None\n682:         if doc is not None and self.is_rewrite_disabled(doc):\n683:             return\n684:         pos = 0\n685:         lineno = 1",
+          "definition": false
+        },
+        {
+          "id": "c_d402165036d25467",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 693,
+          "text": "src/_pytest/assertion/rewrite.py:693\n690:                 and isinstance(item.value, ast.Str)\n691:             ):\n692:                 doc = item.value.s\n693:                 if self.is_rewrite_disabled(doc):\n694:                     return\n695:                 expect_docstring = False\n696:             elif (",
+          "definition": false
+        },
+        {
+          "id": "c_fa8c362e8648d029",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 735,
+          "text": "src/_pytest/assertion/rewrite.py:735\n732:                     nodes.append(field)\n733: \n734:     @staticmethod\n735:     def is_rewrite_disabled(docstring: str) -> bool:\n736:         return \"PYTEST_DONT_REWRITE\" in docstring\n737: \n738:     def variable(self) -> str:",
+          "definition": false
+        },
+        {
+          "id": "c_95535c388c3a6469",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 736,
+          "text": "src/_pytest/assertion/rewrite.py:736\n733: \n734:     @staticmethod\n735:     def is_rewrite_disabled(docstring: str) -> bool:\n736:         return \"PYTEST_DONT_REWRITE\" in docstring\n737: \n738:     def variable(self) -> str:\n739:         \"\"\"Get a new variable.\"\"\"",
+          "definition": false
+        },
+        {
+          "id": "c_46f840d0718ad08b",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 823,
+          "text": "src/_pytest/assertion/rewrite.py:823\n820:     def visit_Assert(self, assert_: ast.Assert) -> List[ast.stmt]:\n821:         \"\"\"Return the AST statements to replace the ast.Assert instance.\n822: \n823:         This rewrites the test of an assertion to provide\n824:         intermediate values and replace it with an if statement which\n825:         raises an assertion error with a detailed explanation in case\n826:         the expression is false.",
+          "definition": false
+        },
+        {
+          "id": "c_3b83e1f7bbb190ea",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 830,
+          "text": "src/_pytest/assertion/rewrite.py:830\n827: \n828:         \"\"\"\n829:         if isinstance(assert_.test, ast.Tuple) and len(assert_.test.elts) >= 1:\n830:             from _pytest.warning_types import PytestAssertRewriteWarning\n831:             import warnings\n832: \n833:             # TODO: This assert should not be needed.",
+          "definition": false
+        },
+        {
+          "id": "c_910fbf82c66a5798",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 836,
+          "text": "src/_pytest/assertion/rewrite.py:836\n833:             # TODO: This assert should not be needed.\n834:             assert self.module_path is not None\n835:             warnings.warn_explicit(\n836:                 PytestAssertRewriteWarning(\n837:                     \"assertion is always true, perhaps remove parentheses?\"\n838:                 ),\n839:                 category=None,",
+          "definition": false
+        },
+        {
+          "id": "c_7fc8986ab0c5d54c",
+          "path": "src/_pytest/assertion/rewrite.py",
+          "line": 854,
+          "text": "src/_pytest/assertion/rewrite.py:854\n851:         self.stack = []  # type: List[Dict[str, ast.expr]]\n852:         self.expl_stmts = []  # type: List[ast.stmt]\n853:         self.push_format_context()\n854:         # Rewrite assert into a bunch of statements.\n855:         top_condition, explanation = self.visit(assert_.test)\n856: \n857:         negation = ast.UnaryOp(ast.Not(), top_condition)",
+          "definition": false
+        },
+        {
+          "id": "c_ce90577a49245d23",
+          "path": "src/_pytest/assertion/util.py",
+          "line": 22,
+          "text": "src/_pytest/assertion/util.py:22\n19: from _pytest.compat import ATTRS_EQ_FIELD\n20: \n21: # The _reprcompare attribute on the util module is used by the new assertion\n22: # interpretation code and assertion rewriter to detect this plugin was\n23: # loaded and in turn call the hooks defined here as part of the\n24: # DebugInterpreter.\n25: _reprcompare = None  # type: Optional[Callable[[str, object, object], Optional[str]]]",
+          "definition": false
+        },
+        {
+          "id": "c_de3d22e3f53e1cd8",
+          "path": "src/_pytest/config/__init__.py",
+          "line": 342,
+          "text": "src/_pytest/config/__init__.py:342\n339:             self.enable_tracing()\n340: \n341:         # Config._consider_importhook will set a real object if required.\n342:         self.rewrite_hook = _pytest.assertion.DummyRewriteHook()\n343:         # Used to know when we are importing conftests after the pytest_configure stage\n344:         self._configured = False\n345: ",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/pytest-dev__pytest-7373",
+      "sourceSha256": "6b5da1416ab4ca7073c6bb9a16b69f5fc3fcc760d320748ce0c065eda4369ddc",
+      "collection": {
+        "totalMatched": 20,
+        "totalFiles": 533,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 80,
+          "orderChanged": true,
+          "shown": 20,
+          "remainingInPool": 60,
+          "hasUnranked": true,
+          "scanCalls": 2,
+          "filesSearched": 29,
+          "cursor": "jev_c_73825d89-fa3c-42ce-b931-1a0b0ebc117f"
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "sympy-simplify-measure",
+        "fixtureTaskId": "sympy__sympy-19007",
+        "kind": "exploratory",
+        "intent": "When simplify() transforms an expression, how does it judge whether the result is actually simpler, and what is the default complexity metric?",
+        "pattern": "measure",
+        "path": "sympy/simplify",
+        "mode": "plain",
+        "referenceAnswer": "simplify in sympy/simplify/simplify.py takes measure=count_ops as its default complexity metric and ratio=1.7; at the end it reverts to the original expression if measure(expr) > ratio*measure(original_expr), so a result is only kept when the metric says it did not get too much more complex.",
+        "evidence": [
+          {
+            "path": "sympy/simplify/simplify.py",
+            "start": 395,
+            "end": 395,
+            "reason": "simplify signature: defaults measure=count_ops, ratio=1.7."
+          },
+          {
+            "path": "sympy/simplify/simplify.py",
+            "start": 712,
+            "end": 713,
+            "reason": "Final ratio check reverting to original_expr when the measure grew beyond ratio."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_7f8382103ae9eaed",
+          "path": "sympy/simplify/fu.py",
+          "line": 1751,
+          "text": "sympy/simplify/fu.py:1751\n1748:     ]\n1749: \n1750: \n1751: def fu(rv, measure=lambda x: (L(x), x.count_ops())):\n1752:     \"\"\"Attempt to simplify expression by using transformation rules given\n1753:     in the algorithm by Fu et al.\n1754: ",
+          "definition": false
+        },
+        {
+          "id": "c_c725ab48aa8e27b6",
+          "path": "sympy/simplify/fu.py",
+          "line": 1755,
+          "text": "sympy/simplify/fu.py:1755\n1752:     \"\"\"Attempt to simplify expression by using transformation rules given\n1753:     in the algorithm by Fu et al.\n1754: \n1755:     :func:`fu` will try to minimize the objective function ``measure``.\n1756:     By default this first minimizes the number of trig terms and then minimizes\n1757:     the number of total operations.\n1758: ",
+          "definition": false
+        },
+        {
+          "id": "c_73c29f68f5d05ca0",
+          "path": "sympy/simplify/fu.py",
+          "line": 1813,
+          "text": "sympy/simplify/fu.py:1813\n1810: \n1811:     >>> fu(sin(x)/cos(x))  # default objective function\n1812:     tan(x)\n1813:     >>> fu(sin(x)/cos(x), measure=lambda x: -x.count_ops()) # maximize op count\n1814:     sin(x)/cos(x)\n1815: \n1816:     References",
+          "definition": false
+        },
+        {
+          "id": "c_7564a1f2e3637385",
+          "path": "sympy/simplify/fu.py",
+          "line": 1821,
+          "text": "sympy/simplify/fu.py:1821\n1818:     http://rfdz.ph-noe.ac.at/fileadmin/Mathematik_Uploads/ACDCA/\n1819:     DESTIME2006/DES_contribs/Fu/simplification.pdf\n1820:     \"\"\"\n1821:     fRL1 = greedy(RL1, measure)\n1822:     fRL2 = greedy(RL2, measure)\n1823: \n1824:     was = rv",
+          "definition": false
+        },
+        {
+          "id": "c_eeb6e69bede88b39",
+          "path": "sympy/simplify/fu.py",
+          "line": 1822,
+          "text": "sympy/simplify/fu.py:1822\n1819:     DESTIME2006/DES_contribs/Fu/simplification.pdf\n1820:     \"\"\"\n1821:     fRL1 = greedy(RL1, measure)\n1822:     fRL2 = greedy(RL2, measure)\n1823: \n1824:     was = rv\n1825:     rv = sympify(rv)",
+          "definition": false
+        },
+        {
+          "id": "c_8d0a6c772fdfe252",
+          "path": "sympy/simplify/fu.py",
+          "line": 1827,
+          "text": "sympy/simplify/fu.py:1827\n1824:     was = rv\n1825:     rv = sympify(rv)\n1826:     if not isinstance(rv, Expr):\n1827:         return rv.func(*[fu(a, measure=measure) for a in rv.args])\n1828:     rv = TR1(rv)\n1829:     if rv.has(tan, cot):\n1830:         rv1 = fRL1(rv)",
+          "definition": false
+        },
+        {
+          "id": "c_e7f4007d22cb3081",
+          "path": "sympy/simplify/fu.py",
+          "line": 1831,
+          "text": "sympy/simplify/fu.py:1831\n1828:     rv = TR1(rv)\n1829:     if rv.has(tan, cot):\n1830:         rv1 = fRL1(rv)\n1831:         if (measure(rv1) < measure(rv)):\n1832:             rv = rv1\n1833:         if rv.has(tan, cot):\n1834:             rv = TR2(rv)",
+          "definition": false
+        },
+        {
+          "id": "c_21b82d417b81d98b",
+          "path": "sympy/simplify/fu.py",
+          "line": 1838,
+          "text": "sympy/simplify/fu.py:1838\n1835:     if rv.has(sin, cos):\n1836:         rv1 = fRL2(rv)\n1837:         rv2 = TR8(TRmorrie(rv1))\n1838:         rv = min([was, rv, rv1, rv2], key=measure)\n1839:     return min(TR2i(rv), rv, key=measure)\n1840: \n1841: ",
+          "definition": false
+        },
+        {
+          "id": "c_a1f9b18a6cb2c9bd",
+          "path": "sympy/simplify/fu.py",
+          "line": 1839,
+          "text": "sympy/simplify/fu.py:1839\n1836:         rv1 = fRL2(rv)\n1837:         rv2 = TR8(TRmorrie(rv1))\n1838:         rv = min([was, rv, rv1, rv2], key=measure)\n1839:     return min(TR2i(rv), rv, key=measure)\n1840: \n1841: \n1842: def process_common_addends(rv, do, key2=None, key1=True):",
+          "definition": false
+        },
+        {
+          "id": "c_5aff61aece250251",
+          "path": "sympy/simplify/powsimp.py",
+          "line": 17,
+          "text": "sympy/simplify/powsimp.py:17\n14: \n15: \n16: \n17: def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):\n18:     \"\"\"\n19:     reduces expression by combining powers with similar bases and exponents.\n20: ",
+          "definition": false
+        },
+        {
+          "id": "c_704e12dde4579bd7",
+          "path": "sympy/simplify/powsimp.py",
+          "line": 108,
+          "text": "sympy/simplify/powsimp.py:108\n105:         _deep = kwargs.get('deep', deep)\n106:         _combine = kwargs.get('combine', combine)\n107:         _force = kwargs.get('force', force)\n108:         _measure = kwargs.get('measure', measure)\n109:         return powsimp(arg, _deep, _combine, _force, _measure)\n110: \n111:     expr = sympify(expr)",
+          "definition": false
+        },
+        {
+          "id": "c_2b3e476be4a74cbf",
+          "path": "sympy/simplify/powsimp.py",
+          "line": 109,
+          "text": "sympy/simplify/powsimp.py:109\n106:         _combine = kwargs.get('combine', combine)\n107:         _force = kwargs.get('force', force)\n108:         _measure = kwargs.get('measure', measure)\n109:         return powsimp(arg, _deep, _combine, _force, _measure)\n110: \n111:     expr = sympify(expr)\n112: ",
+          "definition": false
+        },
+        {
+          "id": "c_d336a0bbb181acfc",
+          "path": "sympy/simplify/powsimp.py",
+          "line": 290,
+          "text": "sympy/simplify/powsimp.py:290\n287:             if b[1] != 1 and b[0].is_Mul:\n288:                 bases.append(b)\n289:         bases.sort(key=default_sort_key)  # this makes tie-breaking canonical\n290:         bases.sort(key=measure, reverse=True)  # handle longest first\n291:         for base in bases:\n292:             if base not in common_b:  # it may have been removed already\n293:                 continue",
+          "definition": false
+        },
+        {
+          "id": "c_2e9f0c5f0191a662",
+          "path": "sympy/simplify/simplify.py",
+          "line": 395,
+          "text": "sympy/simplify/simplify.py:395\n392:     return e\n393: \n394: \n395: def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False, doit=True, **kwargs):\n396:     \"\"\"Simplifies the given expression.\n397: \n398:     Simplification is not a well defined term and the exact strategies",
+          "definition": false
+        },
+        {
+          "id": "c_2e3fd60e5f144762",
+          "path": "sympy/simplify/simplify.py",
+          "line": 431,
+          "text": "sympy/simplify/simplify.py:431\n428:     In some cases, applying :func:`simplify` may actually result in some more\n429:     complicated expression. The default ``ratio=1.7`` prevents more extreme\n430:     cases: if (result length)/(input length) > ratio, then input is returned\n431:     unmodified.  The ``measure`` parameter lets you specify the function used\n432:     to determine how complex an expression is.  The function should take a\n433:     single argument as an expression and return a number such that if\n434:     expression ``a`` is more complex than expression ``b``, then",
+          "definition": false
+        },
+        {
+          "id": "c_85f2fd711d2ed96a",
+          "path": "sympy/simplify/simplify.py",
+          "line": 435,
+          "text": "sympy/simplify/simplify.py:435\n432:     to determine how complex an expression is.  The function should take a\n433:     single argument as an expression and return a number such that if\n434:     expression ``a`` is more complex than expression ``b``, then\n435:     ``measure(a) > measure(b)``.  The default measure function is\n436:     :func:`~.count_ops`, which returns the total number of operations in the\n437:     expression.\n438: ",
+          "definition": false
+        },
+        {
+          "id": "c_f3a589e01e1b532a",
+          "path": "sympy/simplify/simplify.py",
+          "line": 463,
+          "text": "sympy/simplify/simplify.py:463\n460:     Heuristically, the default value ``ratio=1.7`` seems like a reasonable\n461:     choice.\n462: \n463:     You can easily define your own measure function based on what you feel\n464:     should represent the \"size\" or \"complexity\" of the input expression.  Note\n465:     that some choices, such as ``lambda expr: len(str(expr))`` may appear to be\n466:     good metrics, but have other problems (in this case, the measure function",
+          "definition": false
+        },
+        {
+          "id": "c_066beaad7adaba26",
+          "path": "sympy/simplify/simplify.py",
+          "line": 466,
+          "text": "sympy/simplify/simplify.py:466\n463:     You can easily define your own measure function based on what you feel\n464:     should represent the \"size\" or \"complexity\" of the input expression.  Note\n465:     that some choices, such as ``lambda expr: len(str(expr))`` may appear to be\n466:     good metrics, but have other problems (in this case, the measure function\n467:     may slow down simplify too much for very large expressions).  If you don't\n468:     know what a good metric would be, the default, ``count_ops``, is a good\n469:     one.",
+          "definition": false
+        },
+        {
+          "id": "c_9b63b48278d78e3e",
+          "path": "sympy/simplify/simplify.py",
+          "line": 496,
+          "text": "sympy/simplify/simplify.py:496\n493:     2*LOG + MUL + POW + SUB\n494: \n495:     >>> from sympy import Symbol, S\n496:     >>> def my_measure(expr):\n497:     ...     POW = Symbol('POW')\n498:     ...     # Discourage powers by giving POW a weight of 10\n499:     ...     count = count_ops(expr, visual=True).subs(POW, 10)",
+          "definition": false
+        },
+        {
+          "id": "c_20fbbb44c446721a",
+          "path": "sympy/simplify/simplify.py",
+          "line": 503,
+          "text": "sympy/simplify/simplify.py:503\n500:     ...     # Every other operation gets a weight of 1 (the default)\n501:     ...     count = count.replace(Symbol, type(S.One))\n502:     ...     return count\n503:     >>> my_measure(g)\n504:     8\n505:     >>> my_measure(h)\n506:     14",
+          "definition": false
+        },
+        {
+          "id": "c_2171a64d2b381ae1",
+          "path": "sympy/simplify/simplify.py",
+          "line": 505,
+          "text": "sympy/simplify/simplify.py:505\n502:     ...     return count\n503:     >>> my_measure(g)\n504:     8\n505:     >>> my_measure(h)\n506:     14\n507:     >>> 15./8 > 1.7 # 1.7 is the default ratio\n508:     True",
+          "definition": false
+        },
+        {
+          "id": "c_2969717b8c01eda1",
+          "path": "sympy/simplify/simplify.py",
+          "line": 509,
+          "text": "sympy/simplify/simplify.py:509\n506:     14\n507:     >>> 15./8 > 1.7 # 1.7 is the default ratio\n508:     True\n509:     >>> simplify(g, measure=my_measure)\n510:     -log(a)*log(b) + log(a) + log(b)\n511: \n512:     Note that because ``simplify()`` internally tries many different",
+          "definition": false
+        },
+        {
+          "id": "c_d837deeab80b5798",
+          "path": "sympy/simplify/simplify.py",
+          "line": 513,
+          "text": "sympy/simplify/simplify.py:513\n510:     -log(a)*log(b) + log(a) + log(b)\n511: \n512:     Note that because ``simplify()`` internally tries many different\n513:     simplification strategies and then compares them using the measure\n514:     function, we get a completely different result that is still different\n515:     from the input expression by doing this.\n516: ",
+          "definition": false
+        },
+        {
+          "id": "c_3dcaf91032156962",
+          "path": "sympy/simplify/simplify.py",
+          "line": 540,
+          "text": "sympy/simplify/simplify.py:540\n537:         \"\"\"\n538:         if not has_variety(choices):\n539:             return choices[0]\n540:         return min(choices, key=measure)\n541: \n542:     def done(e):\n543:         rv = e.doit() if doit else e",
+          "definition": false
+        },
+        {
+          "id": "c_654fe544a4e1251c",
+          "path": "sympy/simplify/simplify.py",
+          "line": 549,
+          "text": "sympy/simplify/simplify.py:549\n546:     expr = sympify(expr)\n547:     kwargs = dict(\n548:         ratio=kwargs.get('ratio', ratio),\n549:         measure=kwargs.get('measure', measure),\n550:         rational=kwargs.get('rational', rational),\n551:         inverse=kwargs.get('inverse', inverse),\n552:         doit=kwargs.get('doit', doit))",
+          "definition": false
+        },
+        {
+          "id": "c_cd211016e9e48303",
+          "path": "sympy/simplify/simplify.py",
+          "line": 712,
+          "text": "sympy/simplify/simplify.py:712\n709:         if d != 0:\n710:             expr = signsimp(-n/(-d))\n711: \n712:     if measure(expr) > ratio*measure(original_expr):\n713:         expr = original_expr\n714: \n715:     # restore floats",
+          "definition": false
+        },
+        {
+          "id": "c_b3ed4005b451d267",
+          "path": "sympy/simplify/tests/test_fu.py",
+          "line": 293,
+          "text": "sympy/simplify/tests/test_fu.py:293\n290: \n291: \n292: def test_objective():\n293:     assert fu(sin(x)/cos(x), measure=lambda x: x.count_ops()) == \\\n294:             tan(x)\n295:     assert fu(sin(x)/cos(x), measure=lambda x: -x.count_ops()) == \\\n296:             sin(x)/cos(x)",
+          "definition": false
+        },
+        {
+          "id": "c_da10e0d412804319",
+          "path": "sympy/simplify/tests/test_fu.py",
+          "line": 295,
+          "text": "sympy/simplify/tests/test_fu.py:295\n292: def test_objective():\n293:     assert fu(sin(x)/cos(x), measure=lambda x: x.count_ops()) == \\\n294:             tan(x)\n295:     assert fu(sin(x)/cos(x), measure=lambda x: -x.count_ops()) == \\\n296:             sin(x)/cos(x)\n297: \n298: ",
+          "definition": false
+        },
+        {
+          "id": "c_21c5fb9cec689dc4",
+          "path": "sympy/simplify/tests/test_simplify.py",
+          "line": 185,
+          "text": "sympy/simplify/tests/test_simplify.py:185\n182:         assert simplify(r, ratio=oo) is not r\n183: \n184: \n185: def test_simplify_measure():\n186:     measure1 = lambda expr: len(str(expr))\n187:     measure2 = lambda expr: -count_ops(expr)\n188:                                        # Return the most complicated result",
+          "definition": false
+        },
+        {
+          "id": "c_df4c0df531c1ce72",
+          "path": "sympy/simplify/tests/test_simplify.py",
+          "line": 186,
+          "text": "sympy/simplify/tests/test_simplify.py:186\n183: \n184: \n185: def test_simplify_measure():\n186:     measure1 = lambda expr: len(str(expr))\n187:     measure2 = lambda expr: -count_ops(expr)\n188:                                        # Return the most complicated result\n189:     expr = (x + 1)/(x + sin(x)**2 + cos(x)**2)",
+          "definition": false
+        },
+        {
+          "id": "c_2f7a640c7ede4910",
+          "path": "sympy/simplify/tests/test_simplify.py",
+          "line": 187,
+          "text": "sympy/simplify/tests/test_simplify.py:187\n184: \n185: def test_simplify_measure():\n186:     measure1 = lambda expr: len(str(expr))\n187:     measure2 = lambda expr: -count_ops(expr)\n188:                                        # Return the most complicated result\n189:     expr = (x + 1)/(x + sin(x)**2 + cos(x)**2)\n190:     assert measure1(simplify(expr, measure=measure1)) <= measure1(expr)",
+          "definition": false
+        },
+        {
+          "id": "c_c5e6d51c2e7cb706",
+          "path": "sympy/simplify/tests/test_simplify.py",
+          "line": 190,
+          "text": "sympy/simplify/tests/test_simplify.py:190\n187:     measure2 = lambda expr: -count_ops(expr)\n188:                                        # Return the most complicated result\n189:     expr = (x + 1)/(x + sin(x)**2 + cos(x)**2)\n190:     assert measure1(simplify(expr, measure=measure1)) <= measure1(expr)\n191:     assert measure2(simplify(expr, measure=measure2)) <= measure2(expr)\n192: \n193:     expr2 = Eq(sin(x)**2 + cos(x)**2, 1)",
+          "definition": false
+        },
+        {
+          "id": "c_7de3b69deda8f10e",
+          "path": "sympy/simplify/tests/test_simplify.py",
+          "line": 191,
+          "text": "sympy/simplify/tests/test_simplify.py:191\n188:                                        # Return the most complicated result\n189:     expr = (x + 1)/(x + sin(x)**2 + cos(x)**2)\n190:     assert measure1(simplify(expr, measure=measure1)) <= measure1(expr)\n191:     assert measure2(simplify(expr, measure=measure2)) <= measure2(expr)\n192: \n193:     expr2 = Eq(sin(x)**2 + cos(x)**2, 1)\n194:     assert measure1(simplify(expr2, measure=measure1)) <= measure1(expr2)",
+          "definition": false
+        },
+        {
+          "id": "c_4458cdd62bc560f9",
+          "path": "sympy/simplify/tests/test_simplify.py",
+          "line": 194,
+          "text": "sympy/simplify/tests/test_simplify.py:194\n191:     assert measure2(simplify(expr, measure=measure2)) <= measure2(expr)\n192: \n193:     expr2 = Eq(sin(x)**2 + cos(x)**2, 1)\n194:     assert measure1(simplify(expr2, measure=measure1)) <= measure1(expr2)\n195:     assert measure2(simplify(expr2, measure=measure2)) <= measure2(expr2)\n196: \n197: ",
+          "definition": false
+        },
+        {
+          "id": "c_ffb13629d09a3576",
+          "path": "sympy/simplify/tests/test_simplify.py",
+          "line": 195,
+          "text": "sympy/simplify/tests/test_simplify.py:195\n192: \n193:     expr2 = Eq(sin(x)**2 + cos(x)**2, 1)\n194:     assert measure1(simplify(expr2, measure=measure1)) <= measure1(expr2)\n195:     assert measure2(simplify(expr2, measure=measure2)) <= measure2(expr2)\n196: \n197: \n198: def test_simplify_rational():",
+          "definition": false
+        },
+        {
+          "id": "c_6d9601f074521227",
+          "path": "sympy/simplify/tests/test_trigsimp.py",
+          "line": 343,
+          "text": "sympy/simplify/tests/test_trigsimp.py:343\n340: \n341: \n342: def test_issue_2827_trigsimp_methods():\n343:     measure1 = lambda expr: len(str(expr))\n344:     measure2 = lambda expr: -count_ops(expr)\n345:                                        # Return the most complicated result\n346:     expr = (x + 1)/(x + sin(x)**2 + cos(x)**2)",
+          "definition": false
+        },
+        {
+          "id": "c_55d7debbd6299767",
+          "path": "sympy/simplify/tests/test_trigsimp.py",
+          "line": 344,
+          "text": "sympy/simplify/tests/test_trigsimp.py:344\n341: \n342: def test_issue_2827_trigsimp_methods():\n343:     measure1 = lambda expr: len(str(expr))\n344:     measure2 = lambda expr: -count_ops(expr)\n345:                                        # Return the most complicated result\n346:     expr = (x + 1)/(x + sin(x)**2 + cos(x)**2)\n347:     ans = Matrix([1])",
+          "definition": false
+        },
+        {
+          "id": "c_baec9d4c527fcc6d",
+          "path": "sympy/simplify/tests/test_trigsimp.py",
+          "line": 349,
+          "text": "sympy/simplify/tests/test_trigsimp.py:349\n346:     expr = (x + 1)/(x + sin(x)**2 + cos(x)**2)\n347:     ans = Matrix([1])\n348:     M = Matrix([expr])\n349:     assert trigsimp(M, method='fu', measure=measure1) == ans\n350:     assert trigsimp(M, method='fu', measure=measure2) != ans\n351:     # all methods should work with Basic expressions even if they\n352:     # aren't Expr",
+          "definition": false
+        },
+        {
+          "id": "c_cd33e4547a1cb77d",
+          "path": "sympy/simplify/tests/test_trigsimp.py",
+          "line": 350,
+          "text": "sympy/simplify/tests/test_trigsimp.py:350\n347:     ans = Matrix([1])\n348:     M = Matrix([expr])\n349:     assert trigsimp(M, method='fu', measure=measure1) == ans\n350:     assert trigsimp(M, method='fu', measure=measure2) != ans\n351:     # all methods should work with Basic expressions even if they\n352:     # aren't Expr\n353:     M = Matrix.eye(1)",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/sympy__sympy-19007",
+      "sourceSha256": "967000d37236b762f4a17f4de1721022fb43f9d143db5c629707062d9bdc4ecc",
+      "collection": {
+        "totalMatched": 20,
+        "totalFiles": 1760,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 39,
+          "orderChanged": true,
+          "shown": 20,
+          "remainingInPool": 19,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 14,
+          "cursor": "jev_c_b01a1a84-97a3-4370-b0e5-f60ddddfe163"
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "sympy-free-symbols",
+        "fixtureTaskId": "sympy__sympy-19007",
+        "kind": "exploratory",
+        "intent": "Where is free_symbols computed for a generic SymPy expression, and what is the base case for a plain Symbol?",
+        "pattern": "free_symbols",
+        "path": "sympy/core",
+        "mode": "plain",
+        "referenceAnswer": "Basic.free_symbols in sympy/core/basic.py is a property that returns the union of free_symbols over self.args (classes with bound variables like Integral override it); the recursion bottoms out at Symbol.free_symbols in sympy/core/symbol.py, which returns {self}.",
+        "evidence": [
+          {
+            "path": "sympy/core/basic.py",
+            "start": 513,
+            "end": 526,
+            "reason": "Basic.free_symbols property: set().union over args' free_symbols, with docstring on bound-variable exceptions."
+          },
+          {
+            "path": "sympy/core/symbol.py",
+            "start": 295,
+            "end": 297,
+            "reason": "Symbol.free_symbols base case returning {self}."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_36d4a0fa97aa4edd",
+          "path": "sympy/core/add.py",
+          "line": 648,
+          "text": "sympy/core/add.py:648\n645:                 s = v + c\n646:                 if s != self and s.is_extended_positive and a.is_extended_nonnegative:\n647:                     return True\n648:                 if len(self.free_symbols) == 1:\n649:                     v = _monotonic_sign(self)\n650:                     if v is not None and v != self and v.is_extended_positive:\n651:                         return True",
+          "definition": false
+        },
+        {
+          "id": "c_b74e314b26ad34aa",
+          "path": "sympy/core/add.py",
+          "line": 701,
+          "text": "sympy/core/add.py:701\n698:                     s = v + c\n699:                     if s != self and s.is_extended_nonnegative:\n700:                         return True\n701:                     if len(self.free_symbols) == 1:\n702:                         v = _monotonic_sign(self)\n703:                         if v is not None and v != self and v.is_extended_nonnegative:\n704:                             return True",
+          "definition": false
+        },
+        {
+          "id": "c_0737a07c529f25b0",
+          "path": "sympy/core/add.py",
+          "line": 716,
+          "text": "sympy/core/add.py:716\n713:                     s = v + c\n714:                     if s != self and s.is_extended_nonpositive:\n715:                         return True\n716:                     if len(self.free_symbols) == 1:\n717:                         v = _monotonic_sign(self)\n718:                         if v is not None and v != self and v.is_extended_nonpositive:\n719:                             return True",
+          "definition": false
+        },
+        {
+          "id": "c_719c7568e570fa76",
+          "path": "sympy/core/add.py",
+          "line": 732,
+          "text": "sympy/core/add.py:732\n729:                 s = v + c\n730:                 if s != self and s.is_extended_negative and a.is_extended_nonpositive:\n731:                     return True\n732:                 if len(self.free_symbols) == 1:\n733:                     v = _monotonic_sign(self)\n734:                     if v is not None and v != self and v.is_extended_negative:\n735:                         return True",
+          "definition": false
+        },
+        {
+          "id": "c_3e91ea29d0aedd40",
+          "path": "sympy/core/basic.py",
+          "line": 382,
+          "text": "sympy/core/basic.py:382\n379:         o = _sympify(other)\n380:         o = o.as_dummy()\n381: \n382:         dummy_symbols = [i for i in s.free_symbols if i.is_Dummy]\n383: \n384:         if len(dummy_symbols) == 1:\n385:             dummy = dummy_symbols.pop()",
+          "definition": false
+        },
+        {
+          "id": "c_eef5c4c49d40b570",
+          "path": "sympy/core/basic.py",
+          "line": 390,
+          "text": "sympy/core/basic.py:390\n387:             return s == o\n388: \n389:         if symbol is None:\n390:             symbols = o.free_symbols\n391: \n392:             if len(symbols) == 1:\n393:                 symbol = symbols.pop()",
+          "definition": false
+        },
+        {
+          "id": "c_239f67676023a324",
+          "path": "sympy/core/basic.py",
+          "line": 514,
+          "text": "sympy/core/basic.py:514\n511:         return result\n512: \n513:     @property\n514:     def free_symbols(self):\n515:         \"\"\"Return from the atoms of self those which are free symbols.\n516: \n517:         For most expressions, all symbols are free symbols. For some classes",
+          "definition": false
+        },
+        {
+          "id": "c_a6e371f5c2a735a5",
+          "path": "sympy/core/basic.py",
+          "line": 522,
+          "text": "sympy/core/basic.py:522\n519:         which are bound variables, so Integral has a method to return all\n520:         symbols except those. Derivative keeps track of symbols with respect\n521:         to which it will perform a derivative; those are\n522:         bound variables, too, so it has its own free_symbols method.\n523: \n524:         Any other method that uses bound variables should implement a\n525:         free_symbols method.\"\"\"",
+          "definition": false
+        },
+        {
+          "id": "c_b33de8f59d851d21",
+          "path": "sympy/core/basic.py",
+          "line": 525,
+          "text": "sympy/core/basic.py:525\n522:         bound variables, too, so it has its own free_symbols method.\n523: \n524:         Any other method that uses bound variables should implement a\n525:         free_symbols method.\"\"\"\n526:         return set().union(*[a.free_symbols for a in self.args])\n527: \n528:     @property",
+          "definition": false
+        },
+        {
+          "id": "c_72670940e4f7723a",
+          "path": "sympy/core/basic.py",
+          "line": 526,
+          "text": "sympy/core/basic.py:526\n523: \n524:         Any other method that uses bound variables should implement a\n525:         free_symbols method.\"\"\"\n526:         return set().union(*[a.free_symbols for a in self.args])\n527: \n528:     @property\n529:     def expr_free_symbols(self):",
+          "definition": false
+        },
+        {
+          "id": "c_c9489ecf26e66f0a",
+          "path": "sympy/core/basic.py",
+          "line": 529,
+          "text": "sympy/core/basic.py:529\n526:         return set().union(*[a.free_symbols for a in self.args])\n527: \n528:     @property\n529:     def expr_free_symbols(self):\n530:         return set([])\n531: \n532:     def as_dummy(self):",
+          "definition": false
+        },
+        {
+          "id": "c_9be81a9a60016251",
+          "path": "sympy/core/basic.py",
+          "line": 1922,
+          "text": "sympy/core/basic.py:1922\n1919:     pot = preorder_traversal(e)\n1920:     seen = set()\n1921:     if isinstance(e, Basic):\n1922:         free = getattr(e, \"free_symbols\", None)\n1923:         if free is None:\n1924:             return {e}\n1925:     else:",
+          "definition": false
+        },
+        {
+          "id": "c_c58359d3be597b18",
+          "path": "sympy/core/evalf.py",
+          "line": 946,
+          "text": "sympy/core/evalf.py:946\n943:     x, xlow, xhigh = expr.args[1]\n944:     if xlow == xhigh:\n945:         xlow = xhigh = 0\n946:     elif x not in func.free_symbols:\n947:         # only the difference in limits matters in this case\n948:         # so if there is a symbol in common that will cancel\n949:         # out when taking the difference, then use that",
+          "definition": false
+        },
+        {
+          "id": "c_34c366160e1c1ecc",
+          "path": "sympy/core/evalf.py",
+          "line": 951,
+          "text": "sympy/core/evalf.py:951\n948:         # so if there is a symbol in common that will cancel\n949:         # out when taking the difference, then use that\n950:         # difference\n951:         if xhigh.free_symbols & xlow.free_symbols:\n952:             diff = xhigh - xlow\n953:             if diff.is_number:\n954:                 xlow, xhigh = 0, diff",
+          "definition": false
+        },
+        {
+          "id": "c_a470a255e7b7c1fe",
+          "path": "sympy/core/expr.py",
+          "line": 432,
+          "text": "sympy/core/expr.py:432\n429:     def is_number(self):\n430:         \"\"\"Returns True if ``self`` has no free symbols and no\n431:         undefined functions (AppliedUndef, to be precise). It will be\n432:         faster than ``if not self.free_symbols``, however, since\n433:         ``is_number`` will fail as soon as it hits a free symbol\n434:         or undefined function.\n435: ",
+          "definition": false
+        },
+        {
+          "id": "c_9e65f2ab58a0db62",
+          "path": "sympy/core/expr.py",
+          "line": 513,
+          "text": "sympy/core/expr.py:513\n510:         sympy.testing.randtest.random_complex_number\n511:         \"\"\"\n512: \n513:         free = self.free_symbols\n514:         prec = 1\n515:         if free:\n516:             from sympy.testing.randtest import random_complex_number",
+          "definition": false
+        },
+        {
+          "id": "c_a82e270458551cf8",
+          "path": "sympy/core/expr.py",
+          "line": 580,
+          "text": "sympy/core/expr.py:580\n577:         all derivatives are zero then self is constant with respect to the\n578:         given symbols.\n579: \n580:         3) finding out zeros of denominator expression with free_symbols.\n581:         It won't be constant if there are zeros. It gives more negative\n582:         answers for expression that are not constant.\n583: ",
+          "definition": false
+        },
+        {
+          "id": "c_9b0b2e9bf8a09caf",
+          "path": "sympy/core/expr.py",
+          "line": 648,
+          "text": "sympy/core/expr.py:648\n645: \n646:         if self.is_number:\n647:             return True\n648:         free = self.free_symbols\n649:         if not free:\n650:             return True  # assume f(1) is some constant\n651: ",
+          "definition": false
+        },
+        {
+          "id": "c_f680e5af304a9d9a",
+          "path": "sympy/core/expr.py",
+          "line": 716,
+          "text": "sympy/core/expr.py:716\n713:                 if not (pure_complex(deriv, or_real=True)):\n714:                     if flags.get('failing_number', False):\n715:                         return failing_number\n716:                     elif deriv.free_symbols:\n717:                         # dead line provided _random returns None in such cases\n718:                         return None\n719:                 return False",
+          "definition": false
+        },
+        {
+          "id": "c_f066d58742aa5920",
+          "path": "sympy/core/expr.py",
+          "line": 1793,
+          "text": "sympy/core/expr.py:1793\n1790:         >>> I = Integral(x, (x, 1, 2))\n1791:         >>> I.has(x)\n1792:         True\n1793:         >>> x in I.free_symbols\n1794:         False\n1795:         >>> I.as_independent(x) == (I, 1)\n1796:         True",
+          "definition": false
+        },
+        {
+          "id": "c_03d709c4a97c3442",
+          "path": "sympy/core/expr.py",
+          "line": 1855,
+          "text": "sympy/core/expr.py:1855\n1852:             has_other = e.has(*other)\n1853:             if not sym:\n1854:                 return has_other\n1855:             return has_other or e.has(*(e.free_symbols & sym))\n1856: \n1857:         if (want is not func or\n1858:                 func is not Add and func is not Mul):",
+          "definition": false
+        },
+        {
+          "id": "c_75c342eea27bfd74",
+          "path": "sympy/core/expr.py",
+          "line": 2378,
+          "text": "sympy/core/expr.py:2378\n2375:         return Add(*coeffs)\n2376: \n2377:     @property\n2378:     def expr_free_symbols(self):\n2379:         \"\"\"\n2380:         Like ``free_symbols``, but returns the free symbols only if they are contained in an expression node.\n2381: ",
+          "definition": false
+        },
+        {
+          "id": "c_d22729858787df1e",
+          "path": "sympy/core/expr.py",
+          "line": 2380,
+          "text": "sympy/core/expr.py:2380\n2377:     @property\n2378:     def expr_free_symbols(self):\n2379:         \"\"\"\n2380:         Like ``free_symbols``, but returns the free symbols only if they are contained in an expression node.\n2381: \n2382:         Examples\n2383:         ========",
+          "definition": false
+        },
+        {
+          "id": "c_db45911645b2c030",
+          "path": "sympy/core/expr.py",
+          "line": 2386,
+          "text": "sympy/core/expr.py:2386\n2383:         ========\n2384: \n2385:         >>> from sympy.abc import x, y\n2386:         >>> (x + y).expr_free_symbols\n2387:         {x, y}\n2388: \n2389:         If the expression is contained in a non-expression object, don't return",
+          "definition": false
+        },
+        {
+          "id": "c_9fd930f93b5ca110",
+          "path": "sympy/core/expr.py",
+          "line": 2394,
+          "text": "sympy/core/expr.py:2394\n2391: \n2392:         >>> from sympy import Tuple\n2393:         >>> t = Tuple(x + y)\n2394:         >>> t.expr_free_symbols\n2395:         set()\n2396:         >>> t.free_symbols\n2397:         {x, y}",
+          "definition": false
+        },
+        {
+          "id": "c_12ba3ffb0ca94a05",
+          "path": "sympy/core/expr.py",
+          "line": 2396,
+          "text": "sympy/core/expr.py:2396\n2393:         >>> t = Tuple(x + y)\n2394:         >>> t.expr_free_symbols\n2395:         set()\n2396:         >>> t.free_symbols\n2397:         {x, y}\n2398:         \"\"\"\n2399:         return {j for i in self.args for j in i.expr_free_symbols}",
+          "definition": false
+        },
+        {
+          "id": "c_77b666a54e660aa7",
+          "path": "sympy/core/expr.py",
+          "line": 2399,
+          "text": "sympy/core/expr.py:2399\n2396:         >>> t.free_symbols\n2397:         {x, y}\n2398:         \"\"\"\n2399:         return {j for i in self.args for j in i.expr_free_symbols}\n2400: \n2401:     def could_extract_minus_sign(self):\n2402:         \"\"\"Return True if self is not in a canonical form with respect",
+          "definition": false
+        },
+        {
+          "id": "c_0e2e56788208ee59",
+          "path": "sympy/core/expr.py",
+          "line": 2505,
+          "text": "sympy/core/expr.py:2505\n2502:             coeff = piimult\n2503:             tail = ()\n2504:         else:\n2505:             coeff, tail = piimult.as_coeff_add(*piimult.free_symbols)\n2506:         # round down to nearest multiple of 2\n2507:         branchfact = ceiling(coeff/2 - S.Half)*2\n2508:         n += branchfact/2",
+          "definition": false
+        },
+        {
+          "id": "c_c40ac5ccea376f6c",
+          "path": "sympy/core/expr.py",
+          "line": 2521,
+          "text": "sympy/core/expr.py:2521\n2518:         return res, n\n2519: \n2520:     def _eval_is_polynomial(self, syms):\n2521:         if self.free_symbols.intersection(syms) == set([]):\n2522:             return True\n2523:         return False\n2524: ",
+          "definition": false
+        },
+        {
+          "id": "c_5d8f31c7067d15ca",
+          "path": "sympy/core/expr.py",
+          "line": 2585,
+          "text": "sympy/core/expr.py:2585\n2582:         if syms:\n2583:             syms = set(map(sympify, syms))\n2584:         else:\n2585:             syms = self.free_symbols\n2586: \n2587:         if syms.intersection(self.free_symbols) == set([]):\n2588:             # constant polynomial",
+          "definition": false
+        },
+        {
+          "id": "c_8fd8a6ceeeb7eaae",
+          "path": "sympy/core/expr.py",
+          "line": 2587,
+          "text": "sympy/core/expr.py:2587\n2584:         else:\n2585:             syms = self.free_symbols\n2586: \n2587:         if syms.intersection(self.free_symbols) == set([]):\n2588:             # constant polynomial\n2589:             return True\n2590:         else:",
+          "definition": false
+        },
+        {
+          "id": "c_53a28d18a8128a68",
+          "path": "sympy/core/expr.py",
+          "line": 2594,
+          "text": "sympy/core/expr.py:2594\n2591:             return self._eval_is_polynomial(syms)\n2592: \n2593:     def _eval_is_rational_function(self, syms):\n2594:         if self.free_symbols.intersection(syms) == set([]):\n2595:             return True\n2596:         return False\n2597: ",
+          "definition": false
+        },
+        {
+          "id": "c_30cbf6f8c76a574e",
+          "path": "sympy/core/expr.py",
+          "line": 2655,
+          "text": "sympy/core/expr.py:2655\n2652:         if syms:\n2653:             syms = set(map(sympify, syms))\n2654:         else:\n2655:             syms = self.free_symbols\n2656: \n2657:         if syms.intersection(self.free_symbols) == set([]):\n2658:             # constant rational function",
+          "definition": false
+        },
+        {
+          "id": "c_ca9c13b2734cae6b",
+          "path": "sympy/core/expr.py",
+          "line": 2657,
+          "text": "sympy/core/expr.py:2657\n2654:         else:\n2655:             syms = self.free_symbols\n2656: \n2657:         if syms.intersection(self.free_symbols) == set([]):\n2658:             # constant rational function\n2659:             return True\n2660:         else:",
+          "definition": false
+        },
+        {
+          "id": "c_fe31f07dc1040c9d",
+          "path": "sympy/core/expr.py",
+          "line": 2664,
+          "text": "sympy/core/expr.py:2664\n2661:             return self._eval_is_rational_function(syms)\n2662: \n2663:     def _eval_is_algebraic_expr(self, syms):\n2664:         if self.free_symbols.intersection(syms) == set([]):\n2665:             return True\n2666:         return False\n2667: ",
+          "definition": false
+        },
+        {
+          "id": "c_b75211c8da5f41d3",
+          "path": "sympy/core/expr.py",
+          "line": 2713,
+          "text": "sympy/core/expr.py:2713\n2710:         if syms:\n2711:             syms = set(map(sympify, syms))\n2712:         else:\n2713:             syms = self.free_symbols\n2714: \n2715:         if syms.intersection(self.free_symbols) == set([]):\n2716:             # constant algebraic expression",
+          "definition": false
+        },
+        {
+          "id": "c_f03c916499bbb950",
+          "path": "sympy/core/expr.py",
+          "line": 2715,
+          "text": "sympy/core/expr.py:2715\n2712:         else:\n2713:             syms = self.free_symbols\n2714: \n2715:         if syms.intersection(self.free_symbols) == set([]):\n2716:             # constant algebraic expression\n2717:             return True\n2718:         else:",
+          "definition": false
+        },
+        {
+          "id": "c_7b788ba980d94b3f",
+          "path": "sympy/core/expr.py",
+          "line": 2824,
+          "text": "sympy/core/expr.py:2824\n2821:         \"\"\"\n2822:         from sympy import collect, Dummy, Order, Rational, Symbol, ceiling\n2823:         if x is None:\n2824:             syms = self.free_symbols\n2825:             if not syms:\n2826:                 return self\n2827:             elif len(syms) > 1:",
+          "definition": false
+        },
+        {
+          "id": "c_4ce5bd36e7d635e5",
+          "path": "sympy/core/expr.py",
+          "line": 2832,
+          "text": "sympy/core/expr.py:2832\n2829:             x = syms.pop()\n2830: \n2831:         if isinstance(x, Symbol):\n2832:             dep = x in self.free_symbols\n2833:         else:\n2834:             d = Dummy()\n2835:             dep = d in self.xreplace({x: d}).free_symbols",
+          "definition": false
+        },
+        {
+          "id": "c_63384b7e97357300",
+          "path": "sympy/core/expr.py",
+          "line": 2835,
+          "text": "sympy/core/expr.py:2835\n2832:             dep = x in self.free_symbols\n2833:         else:\n2834:             d = Dummy()\n2835:             dep = d in self.xreplace({x: d}).free_symbols\n2836:         if not dep:\n2837:             if n is None:\n2838:                 return (s for s in [self])",
+          "definition": false
+        },
+        {
+          "id": "c_50526597f9d2b23f",
+          "path": "sympy/core/expr.py",
+          "line": 3221,
+          "text": "sympy/core/expr.py:3221\n3218:         exp(logx*y)\n3219: \n3220:         \"\"\"\n3221:         if x and not x in self.free_symbols:\n3222:             return self\n3223:         if x is None or x0 or dir != '+':  # {see XPOS above} or (x.is_positive == x.is_negative == None):\n3224:             return self.series(x, x0, n, dir)",
+          "definition": false
+        },
+        {
+          "id": "c_6c8fb3626b80a138",
+          "path": "sympy/core/expr.py",
+          "line": 3303,
+          "text": "sympy/core/expr.py:3303\n3300:         x = sympify(symbols[0])\n3301:         if not x.is_symbol:\n3302:             raise ValueError('expecting a Symbol but got %s' % x)\n3303:         if x not in self.free_symbols:\n3304:             return self\n3305:         obj = self._eval_as_leading_term(x)\n3306:         if obj is not None:",
+          "definition": false
+        },
+        {
+          "id": "c_6ece4695b7fff935",
+          "path": "sympy/core/expr.py",
+          "line": 3345,
+          "text": "sympy/core/expr.py:3345\n3342:         if l.has(log(x)):\n3343:             l = l.subs(log(x), d)\n3344:         c, e = l.as_coeff_exponent(x)\n3345:         if x in c.free_symbols:\n3346:             from sympy.utilities.misc import filldedent\n3347:             raise ValueError(filldedent(\"\"\"\n3348:                 cannot compute leadterm(%s, %s). The coefficient",
+          "definition": false
+        },
+        {
+          "id": "c_8db7f032b05fcc57",
+          "path": "sympy/core/expr.py",
+          "line": 3811,
+          "text": "sympy/core/expr.py:3811\n3808:         return self\n3809: \n3810:     @property\n3811:     def expr_free_symbols(self):\n3812:         return {self}\n3813: \n3814: ",
+          "definition": false
+        },
+        {
+          "id": "c_4780d7437528d8ca",
+          "path": "sympy/core/exprtools.py",
+          "line": 109,
+          "text": "sympy/core/exprtools.py:109\n106:         return None\n107: \n108:     # univariate polynomial\n109:     free = self.free_symbols\n110:     if len(free) == 1:\n111:         if self.is_polynomial():\n112:             from sympy.polys.polytools import real_roots",
+          "definition": false
+        },
+        {
+          "id": "c_5ecbd34c6e8def96",
+          "path": "sympy/core/exprtools.py",
+          "line": 190,
+          "text": "sympy/core/exprtools.py:190\n187:                     v *= ai\n188:                     continue\n189:                 reps = {}\n190:                 for x in ai.free_symbols:\n191:                     reps[x] = _monotonic_sign(x)\n192:                     if reps[x] is None:\n193:                         return",
+          "definition": false
+        },
+        {
+          "id": "c_b32b54316390d660",
+          "path": "sympy/core/exprtools.py",
+          "line": 198,
+          "text": "sympy/core/exprtools.py:198\n195:     elif c:\n196:         # signed linear expression\n197:         if not any(p for p in a.atoms(Pow) if not p.is_number) and (a.is_nonpositive or a.is_nonnegative):\n198:             free = list(a.free_symbols)\n199:             p = {}\n200:             for i in free:\n201:                 v = _monotonic_sign(i)",
+          "definition": false
+        },
+        {
+          "id": "c_e8377ab2a63c8220",
+          "path": "sympy/core/function.py",
+          "line": 202,
+          "text": "sympy/core/function.py:202\n199:         return signature(self.eval)\n200: \n201:     @property\n202:     def free_symbols(self):\n203:         return set()\n204: \n205:     @property",
+          "definition": false
+        },
+        {
+          "id": "c_9d22a0ffb8e8eec7",
+          "path": "sympy/core/function.py",
+          "line": 746,
+          "text": "sympy/core/function.py:746\n743:             if len(self.args) == 1 or not A.is_Symbol:\n744:                 return Derivative(self, A)\n745:             for i, v in enumerate(self.args):\n746:                 if i != ix and A in v.free_symbols:\n747:                     # it can't be in any other argument's free symbols\n748:                     # issue 8510\n749:                     break",
+          "definition": false
+        },
+        {
+          "id": "c_d42427881c4d8686",
+          "path": "sympy/core/function.py",
+          "line": 767,
+          "text": "sympy/core/function.py:767\n764:         from sympy import Order\n765:         args = [a.as_leading_term(x) for a in self.args]\n766:         o = Order(1, x)\n767:         if any(x in a.free_symbols and o.contains(a) for a in args):\n768:             # Whereas x and any finite number are contained in O(1, x),\n769:             # expressions like 1/x are not. If any arg simplified to a\n770:             # vanishing expression as x -> 0 (like x or x**2, but not",
+          "definition": false
+        },
+        {
+          "id": "c_b55c35273857f37c",
+          "path": "sympy/core/function.py",
+          "line": 1232,
+          "text": "sympy/core/function.py:1232\n1229:         from sympy.utilities.misc import filldedent\n1230: \n1231:         expr = sympify(expr)\n1232:         symbols_or_none = getattr(expr, \"free_symbols\", None)\n1233:         has_symbol_set = isinstance(symbols_or_none, set)\n1234: \n1235:         if not has_symbol_set:",
+          "definition": false
+        },
+        {
+          "id": "c_4e30a0ab6a7c2675",
+          "path": "sympy/core/function.py",
+          "line": 1242,
+          "text": "sympy/core/function.py:1242\n1239: \n1240:         # determine value for variables if it wasn't given\n1241:         if not variables:\n1242:             variables = expr.free_symbols\n1243:             if len(variables) != 1:\n1244:                 if expr.is_number:\n1245:                     return S.Zero",
+          "definition": false
+        },
+        {
+          "id": "c_241f4e0fa477f77d",
+          "path": "sympy/core/function.py",
+          "line": 1352,
+          "text": "sympy/core/function.py:1352\n1349:             # Derivatives as those can be created by intermediate\n1350:             # derivatives.\n1351:             zero = False\n1352:             free = expr.free_symbols\n1353:             for v, c in variable_count:\n1354:                 vfree = v.free_symbols\n1355:                 if c.is_positive and vfree:",
+          "definition": false
+        },
+        {
+          "id": "c_83981b3c52085cf2",
+          "path": "sympy/core/function.py",
+          "line": 1354,
+          "text": "sympy/core/function.py:1354\n1351:             zero = False\n1352:             free = expr.free_symbols\n1353:             for v, c in variable_count:\n1354:                 vfree = v.free_symbols\n1355:                 if c.is_positive and vfree:\n1356:                     if isinstance(v, AppliedUndef):\n1357:                         # these match exactly since",
+          "definition": false
+        },
+        {
+          "id": "c_9bb2da0b555d1474",
+          "path": "sympy/core/function.py",
+          "line": 1426,
+          "text": "sympy/core/function.py:1426\n1423:                 # of all others\n1424:                 clashing = not (isinstance(old_v, Derivative) or \\\n1425:                     isinstance(old_v, AppliedUndef))\n1426:                 if not v in expr.free_symbols and not clashing:\n1427:                     return expr.diff(v)  # expr's version of 0\n1428:                 if not old_v.is_scalar and not hasattr(\n1429:                         old_v, '_eval_derivative'):",
+          "definition": false
+        },
+        {
+          "id": "c_cb5a47a420cce2eb",
+          "path": "sympy/core/function.py",
+          "line": 1562,
+          "text": "sympy/core/function.py:1562\n1559:             if not wrt and isinstance(d, AppliedUndef):\n1560:                 return False\n1561:             if v.is_Symbol:\n1562:                 return v in d.free_symbols\n1563:             if isinstance(v, AppliedUndef):\n1564:                 return _block(d.xreplace({v: D}), D)\n1565:             return d.free_symbols & v.free_symbols",
+          "definition": false
+        },
+        {
+          "id": "c_5c74caaaa3169ada",
+          "path": "sympy/core/function.py",
+          "line": 1565,
+          "text": "sympy/core/function.py:1565\n1562:                 return v in d.free_symbols\n1563:             if isinstance(v, AppliedUndef):\n1564:                 return _block(d.xreplace({v: D}), D)\n1565:             return d.free_symbols & v.free_symbols\n1566:         for i in range(len(vc)):\n1567:             for j in range(i):\n1568:                 if _block(v(j), v(i)):",
+          "definition": false
+        },
+        {
+          "id": "c_35844ed01bbce43b",
+          "path": "sympy/core/function.py",
+          "line": 1623,
+          "text": "sympy/core/function.py:1623\n1620:         When we can represent derivatives at a point, this should be folded\n1621:         into the normal evalf. For now, we need a special method.\n1622:         \"\"\"\n1623:         if len(self.free_symbols) != 1 or len(self.variables) != 1:\n1624:             raise NotImplementedError('partials and higher order derivatives')\n1625:         z = list(self.free_symbols)[0]\n1626: ",
+          "definition": false
+        },
+        {
+          "id": "c_880719c24820c8d3",
+          "path": "sympy/core/function.py",
+          "line": 1625,
+          "text": "sympy/core/function.py:1625\n1622:         \"\"\"\n1623:         if len(self.free_symbols) != 1 or len(self.variables) != 1:\n1624:             raise NotImplementedError('partials and higher order derivatives')\n1625:         z = list(self.free_symbols)[0]\n1626: \n1627:         def eval(x):\n1628:             f0 = self.expr.subs(z, Expr._from_mpmath(x, prec=mpmath.mp.prec))",
+          "definition": false
+        },
+        {
+          "id": "c_fa3a5f6cbb13971a",
+          "path": "sympy/core/function.py",
+          "line": 1669,
+          "text": "sympy/core/function.py:1669\n1666:         return sum([count for var, count in self.variable_count], 0)\n1667: \n1668:     @property\n1669:     def free_symbols(self):\n1670:         ret = self.expr.free_symbols\n1671:         # Add symbolic counts to free_symbols\n1672:         for var, count in self.variable_count:",
+          "definition": false
+        },
+        {
+          "id": "c_5381103b504687df",
+          "path": "sympy/core/function.py",
+          "line": 1670,
+          "text": "sympy/core/function.py:1670\n1667: \n1668:     @property\n1669:     def free_symbols(self):\n1670:         ret = self.expr.free_symbols\n1671:         # Add symbolic counts to free_symbols\n1672:         for var, count in self.variable_count:\n1673:             ret.update(count.free_symbols)",
+          "definition": false
+        },
+        {
+          "id": "c_946522d9c12a853c",
+          "path": "sympy/core/function.py",
+          "line": 1671,
+          "text": "sympy/core/function.py:1671\n1668:     @property\n1669:     def free_symbols(self):\n1670:         ret = self.expr.free_symbols\n1671:         # Add symbolic counts to free_symbols\n1672:         for var, count in self.variable_count:\n1673:             ret.update(count.free_symbols)\n1674:         return ret",
+          "definition": false
+        },
+        {
+          "id": "c_75c93e8398edefcc",
+          "path": "sympy/core/function.py",
+          "line": 1673,
+          "text": "sympy/core/function.py:1673\n1670:         ret = self.expr.free_symbols\n1671:         # Add symbolic counts to free_symbols\n1672:         for var, count in self.variable_count:\n1673:             ret.update(count.free_symbols)\n1674:         return ret\n1675: \n1676:     def _eval_subs(self, old, new):",
+          "definition": false
+        },
+        {
+          "id": "c_33801ad71150c55d",
+          "path": "sympy/core/function.py",
+          "line": 1730,
+          "text": "sympy/core/function.py:1730\n1727:             syms = {vi: Dummy() for vi in self._wrt_variables\n1728:                 if not vi.is_Symbol}\n1729:             wrt = set(syms.get(vi, vi) for vi in self._wrt_variables)\n1730:             forbidden = args[0].xreplace(syms).free_symbols & wrt\n1731:             nfree = new.xreplace(syms).free_symbols\n1732:             ofree = old.xreplace(syms).free_symbols\n1733:             if (nfree - ofree) & forbidden:",
+          "definition": false
+        },
+        {
+          "id": "c_8e53157f0fe65cd9",
+          "path": "sympy/core/function.py",
+          "line": 1731,
+          "text": "sympy/core/function.py:1731\n1728:                 if not vi.is_Symbol}\n1729:             wrt = set(syms.get(vi, vi) for vi in self._wrt_variables)\n1730:             forbidden = args[0].xreplace(syms).free_symbols & wrt\n1731:             nfree = new.xreplace(syms).free_symbols\n1732:             ofree = old.xreplace(syms).free_symbols\n1733:             if (nfree - ofree) & forbidden:\n1734:                 return Subs(self, old, new)",
+          "definition": false
+        },
+        {
+          "id": "c_e0f8718bb28324c9",
+          "path": "sympy/core/function.py",
+          "line": 1732,
+          "text": "sympy/core/function.py:1732\n1729:             wrt = set(syms.get(vi, vi) for vi in self._wrt_variables)\n1730:             forbidden = args[0].xreplace(syms).free_symbols & wrt\n1731:             nfree = new.xreplace(syms).free_symbols\n1732:             ofree = old.xreplace(syms).free_symbols\n1733:             if (nfree - ofree) & forbidden:\n1734:                 return Subs(self, old, new)\n1735: ",
+          "definition": false
+        },
+        {
+          "id": "c_58341e1f7718fa6a",
+          "path": "sympy/core/function.py",
+          "line": 1994,
+          "text": "sympy/core/function.py:1994\n1991:     bound_symbols = variables\n1992: \n1993:     @property\n1994:     def free_symbols(self):\n1995:         return self.expr.free_symbols - set(self.variables)\n1996: \n1997:     def __call__(self, *args):",
+          "definition": false
+        },
+        {
+          "id": "c_42f56c88e6185d39",
+          "path": "sympy/core/function.py",
+          "line": 1995,
+          "text": "sympy/core/function.py:1995\n1992: \n1993:     @property\n1994:     def free_symbols(self):\n1995:         return self.expr.free_symbols - set(self.variables)\n1996: \n1997:     def __call__(self, *args):\n1998:         n = len(args)",
+          "definition": false
+        },
+        {
+          "id": "c_2828c2aa655223c9",
+          "path": "sympy/core/function.py",
+          "line": 2184,
+          "text": "sympy/core/function.py:2184\n2181:             # because the new symbol that would be created is _1 but _1\n2182:             # is already mapped to 0 so __0 and __1 are used for the new\n2183:             # symbols\n2184:             if any(r in expr.free_symbols and\n2185:                    r in variables and\n2186:                    Symbol(pre + mystr(point[variables.index(r)])) != r\n2187:                    for _, r in reps):",
+          "definition": false
+        },
+        {
+          "id": "c_923e1db9eaa82872",
+          "path": "sympy/core/function.py",
+          "line": 2225,
+          "text": "sympy/core/function.py:2225\n2222:                 undone2 = []\n2223:                 D = Dummy()\n2224:                 for vi, pi in undone:\n2225:                     if D not in e.xreplace({vi: D}).free_symbols:\n2226:                         e = e.subs(vi, pi)\n2227:                     else:\n2228:                         undone2.append((vi, pi))",
+          "definition": false
+        },
+        {
+          "id": "c_3b5758a8c577fa18",
+          "path": "sympy/core/function.py",
+          "line": 2234,
+          "text": "sympy/core/function.py:2234\n2231:                 wrt = []\n2232:                 D = Dummy()\n2233:                 expr = e.expr\n2234:                 free = expr.free_symbols\n2235:                 for vi, ci in e.variable_count:\n2236:                     if isinstance(vi, Symbol) and vi in free:\n2237:                         expr = expr.diff((vi, ci))",
+          "definition": false
+        },
+        {
+          "id": "c_6c285913b0c2966b",
+          "path": "sympy/core/function.py",
+          "line": 2238,
+          "text": "sympy/core/function.py:2238\n2235:                 for vi, ci in e.variable_count:\n2236:                     if isinstance(vi, Symbol) and vi in free:\n2237:                         expr = expr.diff((vi, ci))\n2238:                     elif D in expr.subs(vi, D).free_symbols:\n2239:                         expr = expr.diff((vi, ci))\n2240:                     else:\n2241:                         wrt.append((vi, ci))",
+          "definition": false
+        },
+        {
+          "id": "c_ca832cbd4ae44245",
+          "path": "sympy/core/function.py",
+          "line": 2280,
+          "text": "sympy/core/function.py:2280\n2277:         return self._args[2]\n2278: \n2279:     @property\n2280:     def free_symbols(self):\n2281:         return (self.expr.free_symbols - set(self.variables) |\n2282:             set(self.point.free_symbols))\n2283: ",
+          "definition": false
+        },
+        {
+          "id": "c_c71d9524297162b2",
+          "path": "sympy/core/function.py",
+          "line": 2281,
+          "text": "sympy/core/function.py:2281\n2278: \n2279:     @property\n2280:     def free_symbols(self):\n2281:         return (self.expr.free_symbols - set(self.variables) |\n2282:             set(self.point.free_symbols))\n2283: \n2284:     @property",
+          "definition": false
+        },
+        {
+          "id": "c_856d85dc87801836",
+          "path": "sympy/core/function.py",
+          "line": 2282,
+          "text": "sympy/core/function.py:2282\n2279:     @property\n2280:     def free_symbols(self):\n2281:         return (self.expr.free_symbols - set(self.variables) |\n2282:             set(self.point.free_symbols))\n2283: \n2284:     @property\n2285:     def expr_free_symbols(self):",
+          "definition": false
+        },
+        {
+          "id": "c_cb8cef89188aab0b",
+          "path": "sympy/core/function.py",
+          "line": 2285,
+          "text": "sympy/core/function.py:2285\n2282:             set(self.point.free_symbols))\n2283: \n2284:     @property\n2285:     def expr_free_symbols(self):\n2286:         return (self.expr.expr_free_symbols - set(self.variables) |\n2287:             set(self.point.expr_free_symbols))\n2288: ",
+          "definition": false
+        },
+        {
+          "id": "c_f9ab6b884acb6180",
+          "path": "sympy/core/function.py",
+          "line": 2286,
+          "text": "sympy/core/function.py:2286\n2283: \n2284:     @property\n2285:     def expr_free_symbols(self):\n2286:         return (self.expr.expr_free_symbols - set(self.variables) |\n2287:             set(self.point.expr_free_symbols))\n2288: \n2289:     def __eq__(self, other):",
+          "definition": false
+        },
+        {
+          "id": "c_625f0d7078f277ed",
+          "path": "sympy/core/function.py",
+          "line": 2287,
+          "text": "sympy/core/function.py:2287\n2284:     @property\n2285:     def expr_free_symbols(self):\n2286:         return (self.expr.expr_free_symbols - set(self.variables) |\n2287:             set(self.point.expr_free_symbols))\n2288: \n2289:     def __eq__(self, other):\n2290:         if not isinstance(other, Subs):",
+          "definition": false
+        },
+        {
+          "id": "c_4f649bd3bbeddcd9",
+          "path": "sympy/core/function.py",
+          "line": 2334,
+          "text": "sympy/core/function.py:2334\n2331:         val = Add.fromiter(p.diff(s) * Subs(self.expr.diff(v), self.variables, self.point).doit() for v, p in zip(self.variables, self.point))\n2332: \n2333:         # Check if there are free symbols in `self.expr`:\n2334:         # First get the `expr_free_symbols`, which returns the free symbols\n2335:         # that are directly contained in an expression node (i.e. stop\n2336:         # searching if the node isn't an expression). At this point turn the\n2337:         # expressions into `free_symbols` and check if there are common free",
+          "definition": false
+        },
+        {
+          "id": "c_e1cb06a85e95cd69",
+          "path": "sympy/core/function.py",
+          "line": 2337,
+          "text": "sympy/core/function.py:2337\n2334:         # First get the `expr_free_symbols`, which returns the free symbols\n2335:         # that are directly contained in an expression node (i.e. stop\n2336:         # searching if the node isn't an expression). At this point turn the\n2337:         # expressions into `free_symbols` and check if there are common free\n2338:         # symbols in `self.expr` and the deriving factor.\n2339:         fs1 = {j for i in self.expr_free_symbols for j in i.free_symbols}\n2340:         if len(fs1 & s.free_symbols) > 0:",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/sympy__sympy-19007",
+      "sourceSha256": "967000d37236b762f4a17f4de1721022fb43f9d143db5c629707062d9bdc4ecc",
+      "collection": {
+        "totalMatched": 20,
+        "totalFiles": 1760,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 80,
+          "orderChanged": true,
+          "shown": 20,
+          "remainingInPool": 60,
+          "hasUnranked": true,
+          "scanCalls": 1,
+          "filesSearched": 9,
+          "cursor": "jev_c_5df3d00d-3f36-40ba-bcee-4c80b6d6c7cf"
+        }
+      }
+    },
+    {
+      "query": {
+        "id": "sympy-parse-expr-ctrl",
+        "fixtureTaskId": "sympy__sympy-21379",
+        "kind": "control",
+        "intent": "Locate the definition of parse_expr, the function that converts a string into a SymPy expression.",
+        "pattern": "def parse_expr",
+        "mode": "plain",
+        "referenceAnswer": "parse_expr is defined in sympy/parsing/sympy_parser.py; it converts the string s into a SymPy expression using optional local_dict/global_dict namespaces and a tuple of token transformations (standard_transformations by default), with an evaluate flag.",
+        "evidence": [
+          {
+            "path": "sympy/parsing/sympy_parser.py",
+            "start": 915,
+            "end": 918,
+            "reason": "def parse_expr signature and opening docstring line describing string-to-expression conversion."
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "id": "c_71bf7f3e0140b916",
+          "path": "sympy/parsing/ast_parser.py",
+          "line": 64,
+          "text": "sympy/parsing/ast_parser.py:64\n61:             args=[Tuple(args, Load()), body], keywords=[])\n62:         return fix_missing_locations(n)\n63: \n64: def parse_expr(s, local_dict):\n65:     \"\"\"\n66:     Converts the string \"s\" to a SymPy expression, in local_dict.\n67: ",
+          "definition": false
+        },
+        {
+          "id": "c_93f4b1266facbc0c",
+          "path": "sympy/parsing/sympy_parser.py",
+          "line": 915,
+          "text": "sympy/parsing/sympy_parser.py:915\n912:     return expr\n913: \n914: \n915: def parse_expr(s, local_dict=None, transformations=standard_transformations,\n916:                global_dict=None, evaluate=True):\n917:     \"\"\"Converts the string ``s`` to a SymPy expression, in ``local_dict``\n918: ",
+          "definition": false
+        },
+        {
+          "id": "c_69c1d2a10d667efc",
+          "path": "sympy/simplify/radsimp.py",
+          "line": 285,
+          "text": "sympy/simplify/radsimp.py:285\n282: \n283:         return sexpr, rat_expo, sym_expo, deriv\n284: \n285:     def parse_expression(terms, pattern):\n286:         \"\"\"Parse terms searching for a pattern.\n287:         Terms is a list of tuples as returned by parse_terms;\n288:         Pattern is an expression treated as a product of factors.",
+          "definition": false
+        }
+      ],
+      "sourceRoot": "/Users/charliexue/Projects/personal/jev-search/results/retrieval/pools-v2/sympy__sympy-21379",
+      "sourceSha256": "e2e1b22ed566698495fe83a6fbd282e0a8ec57dc14f16cbff9390b4dd05d4224",
+      "collection": {
+        "totalMatched": 3,
+        "totalFiles": 1885,
+        "rerank": {
+          "order": "native",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "latencyMs": 0,
+          "poolSize": 3,
+          "orderChanged": true,
+          "shown": 3,
+          "remainingInPool": 0,
+          "hasUnranked": false,
+          "scanCalls": 1,
+          "filesSearched": 244
+        }
+      }
+    }
+  ]
+}

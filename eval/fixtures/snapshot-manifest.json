@@ -1,0 +1,155 @@
+{
+  "snapshotId": "sha256:c728f6a9e1d0f8b1b35e96bc5f9bd0ea9af87bdba50ff08100026baa1cfb3ed3",
+  "sourceProject": "/Users/charliexue/Projects/personal/pi-personal",
+  "policy": "Frozen before live evaluation; all TypeScript files under extensions/, modules/cxstack/, and vendor/pi-memory/src/. No settings, credentials, session files, prompts, skills, or non-TypeScript files.",
+  "files": [
+    {
+      "path": "extensions/answer.ts",
+      "sha256": "08165ef27bd634cc9a2c258ef72189c241c662238c704acc4fdaf278ec9c8fe3"
+    },
+    {
+      "path": "extensions/apple-notes.ts",
+      "sha256": "83be20ea785dd3cd297e2c4c52d4649c735768ede928e0d02c749bc83a21f0c6"
+    },
+    {
+      "path": "extensions/clear-command.ts",
+      "sha256": "4d19f28df44e4d2e1754f8ea1add715fa86a3729fa20c571f1541b6056083d7f"
+    },
+    {
+      "path": "extensions/color-footer.ts",
+      "sha256": "324c23232f8580fcc472ef15890e2a564241e17188c7b7662ba3d246016cb1bf"
+    },
+    {
+      "path": "extensions/core-mcp.ts",
+      "sha256": "eb69ad5acce8fd946f9de3562ba047a60488f57f334edda6d991fd4cae43f0e9"
+    },
+    {
+      "path": "extensions/effort.ts",
+      "sha256": "48b31c3b60132f290cbb8bafec255bd026f333a44687d5ad2e1b07b454714748"
+    },
+    {
+      "path": "extensions/fast-mode.ts",
+      "sha256": "276fa3904e23d18f067ef6fdb20910d4172720c01e918008becd8e043943b512"
+    },
+    {
+      "path": "extensions/inline-skills.ts",
+      "sha256": "ce6f474b1f05df2637cb43f6e7b59421a9db46480522f3e11cef2bb38a3305ef"
+    },
+    {
+      "path": "extensions/intercom-toggle.ts",
+      "sha256": "79d668e29ec3caa7e12341e63b8d058f7062a2ed6a7e65c4870300f82a1cb033"
+    },
+    {
+      "path": "extensions/notify.ts",
+      "sha256": "1d59f52658abf19fbb60836bc521e43043def50078080cb26eec0de404d179c3"
+    },
+    {
+      "path": "extensions/prompt-restore.ts",
+      "sha256": "5b1bd66241de5cf50c372a75cf8cf14fe2e66759c63981a60d0d354e37c2c876"
+    },
+    {
+      "path": "extensions/reasoning-label.ts",
+      "sha256": "9d97b77fba2a82809dee3b65f89091ad3aecf88dd851ca7e4e05e73ae453c0e8"
+    },
+    {
+      "path": "extensions/remember-last-model.ts",
+      "sha256": "1312513447dc366c3db831f7dda4b4db160402739c04919e61245d32f41e5419"
+    },
+    {
+      "path": "extensions/reminders.ts",
+      "sha256": "0436e85e14da808f4472ce1fe80ea61a4c2f4786e5dd4672a7c2dc95483bef06"
+    },
+    {
+      "path": "extensions/side-conversations.ts",
+      "sha256": "466ad41c80cd4736e5b5978b8641ebe6731befbf2e7e06577d46fc4d8976ead7"
+    },
+    {
+      "path": "extensions/superset.ts",
+      "sha256": "c0961d1b04628c97a43fe14ad519eeea3a90160e90643d447a14e14522a96d65"
+    },
+    {
+      "path": "extensions/time.ts",
+      "sha256": "61f8f17be8fa7b689e91f0a7bef34efad7172d16900ceb383d8ecc1c741d5338"
+    },
+    {
+      "path": "extensions/tool-safety.ts",
+      "sha256": "259f5cbb66022769b65fd524d99a2f20a5efb751e82e1f242fdb7a9e00588e68"
+    },
+    {
+      "path": "modules/cxstack/components/corrections-review.ts",
+      "sha256": "75573a283400110a122396bc9a5212bfea59ab173982ac4bc9f49375f705ad66"
+    },
+    {
+      "path": "modules/cxstack/extensions/audit.ts",
+      "sha256": "9d63701a921120d9047be6a22ca18d9864021fdccfe5e073e93eaa150a9e0873"
+    },
+    {
+      "path": "modules/cxstack/extensions/corrections.ts",
+      "sha256": "e4edf28422c9da4a8f4e8984b63d94fcf6ffc64f2443bad0fc75b721cbcbb156"
+    },
+    {
+      "path": "modules/cxstack/extensions/cx.ts",
+      "sha256": "83fed0ed2c37668644432df7557baf0b568681845ad8c67175c70d38214fdebc"
+    },
+    {
+      "path": "modules/cxstack/extensions/reflect.ts",
+      "sha256": "47af26777df170cb8b14ec968e6212ff6d97ecafb068f6e1bab490fb123e2fe5"
+    },
+    {
+      "path": "modules/cxstack/lib/audit.ts",
+      "sha256": "406f97b82444e8a7bc967def7cd82c6adcac0e0bb9402be0212970a354d76c77"
+    },
+    {
+      "path": "modules/cxstack/lib/corrections.ts",
+      "sha256": "75af6d11b590631385f4f924d3146eee2ec66a5ea6023d97cff5d83d4ea128d2"
+    },
+    {
+      "path": "modules/cxstack/lib/cx.ts",
+      "sha256": "575bf3ba9bbf5c0ec5f4cc3224198dfd3165085c065acb6207081a855bf42927"
+    },
+    {
+      "path": "modules/cxstack/test/correction-triage.test.ts",
+      "sha256": "9b54cdcf20dbf12156b0911d55bde08357b64ef287d92bbba79c40546e5a24d4"
+    },
+    {
+      "path": "modules/cxstack/test/corrections-extension.test.ts",
+      "sha256": "4e68577dd7f5db898782b832634d40dcc74360fc68fd805c30bdfac99bad7f39"
+    },
+    {
+      "path": "modules/cxstack/test/corrections-live.test.ts",
+      "sha256": "26f4c1b6d4eef53bf262247b95002a2aa4126455b6b2b1c96c023632b4e62a98"
+    },
+    {
+      "path": "modules/cxstack/test/corrections-review.test.ts",
+      "sha256": "6cb56efd518b3a05e428fb9089ab127b0ee2699f8ff5859310a60d2cef316a9e"
+    },
+    {
+      "path": "modules/cxstack/test/corrections.test.ts",
+      "sha256": "7919683cf071fc0dc3a8de507dae1520607d0061a0c1b3f7f56a9017e9c28307"
+    },
+    {
+      "path": "modules/cxstack/test/cxstack.test.ts",
+      "sha256": "320f48d9f2a183b9ce45fd92ed7cf1d40bd7c7d2ba3449a2220369968763d237"
+    },
+    {
+      "path": "modules/cxstack/test/routing-policy.test.ts",
+      "sha256": "242efd67cac7dfe86ae9662f5c71b2cb9aa0c7bb95b9ac46510b91574df666ef"
+    },
+    {
+      "path": "vendor/pi-memory/src/core.ts",
+      "sha256": "9900ad8d15f1d504a02a773570ec9deb61e81af585bfd723141893dd4e524c3b"
+    },
+    {
+      "path": "vendor/pi-memory/src/format.ts",
+      "sha256": "a0bc04526e78305f81039c3fff6d11edd38b537ff9eaae520994158612f18028"
+    },
+    {
+      "path": "vendor/pi-memory/src/index.ts",
+      "sha256": "1655d3ddc1db98688eaf6c2ac161dd5ab0677ee9c318639bcc89e10bbfadecca"
+    },
+    {
+      "path": "vendor/pi-memory/src/search.ts",
+      "sha256": "a9510c789bf8696e8808348839aab6ae16b3e144b68cc5e268a793bb78c58d59"
+    }
+  ]
+}

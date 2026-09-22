@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "queries": [
+    {
+      "id": "req-redirect-auth-strip",
+      "fixtureTaskId": "psf__requests-3362",
+      "kind": "exploratory",
+      "intent": "When a request is redirected to a different host, where does requests decide whether to drop the Authorization header?",
+      "pattern": "Authorization",
+      "path": "requests",
+      "mode": "plain",
+      "referenceAnswer": "SessionRedirectMixin.rebuild_auth in requests/sessions.py deletes the Authorization header whenever the redirect target's hostname differs from the original request's hostname, then optionally reapplies credentials from .netrc via get_netrc_auth when trust_env is set.",
+      "evidence": [
+        {
+          "path": "requests/sessions.py",
+          "start": 187,
+          "end": 210,
+          "reason": "rebuild_auth: compares original vs redirect hostname and deletes the Authorization header on host change; reapplies netrc auth if trust_env."
+        }
+      ]
+    },
+    {
+      "id": "req-redirect-limit",
+      "fixtureTaskId": "psf__requests-3362",
+      "kind": "exploratory",
+      "intent": "How many redirects will requests follow by default, and where is that limit enforced?",
+      "pattern": "max_redirects",
+      "path": "requests",
+      "mode": "plain",
+      "referenceAnswer": "The default is DEFAULT_REDIRECT_LIMIT = 30, defined in requests/models.py and assigned to Session.max_redirects in Session.__init__; SessionRedirectMixin.resolve_redirects raises TooManyRedirects once the redirect count reaches self.max_redirects.",
+      "evidence": [
+        {
+          "path": "requests/models.py",
+          "start": 47,
+          "end": 47,
+          "reason": "DEFAULT_REDIRECT_LIMIT = 30, the default value."
+        },
+        {
+          "path": "requests/sessions.py",
+          "start": 112,
+          "end": 113,
+          "reason": "resolve_redirects enforcement: raises TooManyRedirects when i >= self.max_redirects."
+        },
+        {
+          "path": "requests/sessions.py",
+          "start": 334,
+          "end": 334,
+          "reason": "Session.__init__ sets self.max_redirects = DEFAULT_REDIRECT_LIMIT."
+        }
+      ]
+    },
+    {
+      "id": "req-apparent-encoding-ctrl",
+      "fixtureTaskId": "psf__requests-3362",
+      "kind": "control",
+      "intent": "Locate the definition of Response.apparent_encoding and identify which library it delegates to.",
+      "pattern": "def apparent_encoding",
+      "mode": "plain",
+      "referenceAnswer": "Response.apparent_encoding is a property in requests/models.py that returns chardet.detect(self.content)['encoding'], i.e. it delegates content-sniffed encoding detection to the bundled chardet library.",
+      "evidence": [
+        {
+          "path": "requests/models.py",
+          "start": 648,
+          "end": 651,
+          "reason": "Property definition returning chardet.detect(self.content)['encoding']."
+        }
+      ]
+    },
+    {
+      "id": "pytest-collect-file-patterns",
+      "fixtureTaskId": "pytest-dev__pytest-7220",
+      "kind": "exploratory",
+      "intent": "How does pytest decide whether a .py file should be collected as a test module?",
+      "pattern": "python_files",
+      "path": "src/_pytest",
+      "mode": "plain",
+      "referenceAnswer": "pytest_collect_file in src/_pytest/python.py collects a .py file only if it is an initial (command-line) path or matches one of the python_files ini glob patterns plus __init__.py; matching is done by path_matches_patterns using py.path fnmatch, then pytest_pycollect_makemodule creates the module node.",
+      "evidence": [
+        {
+          "path": "src/_pytest/python.py",
+          "start": 176,
+          "end": 190,
+          "reason": "pytest_collect_file gate on python_files ini patterns and the path_matches_patterns fnmatch helper."
+        }
+      ]
+    },
+    {
+      "id": "pytest-maxfail-stop",
+      "fixtureTaskId": "pytest-dev__pytest-7220",
+      "kind": "exploratory",
+      "intent": "Where does pytest implement stopping the whole run after a number of test failures (the -x / --maxfail behavior)?",
+      "pattern": "maxfail",
+      "path": "src/_pytest",
+      "mode": "plain",
+      "referenceAnswer": "In src/_pytest/main.py: -x is a store_const alias setting maxfail=1 and --maxfail stores an int (default 0). Session.pytest_runtest_logreport increments testsfailed on each failure and sets self.shouldfail once testsfailed >= maxfail; pytest_collectstart then raises Session.Failed, aborting the session.",
+      "evidence": [
+        {
+          "path": "src/_pytest/main.py",
+          "start": 56,
+          "end": 72,
+          "reason": "Option definitions: -x as store_const maxfail=1 and --maxfail as int with default 0."
+        },
+        {
+          "path": "src/_pytest/main.py",
+          "start": 426,
+          "end": 440,
+          "reason": "Session hooks: shouldfail set when testsfailed >= maxfail; Failed raised at next collectstart."
+        }
+      ]
+    },
+    {
+      "id": "pytest-lastfailed-storage",
+      "fixtureTaskId": "pytest-dev__pytest-7373",
+      "kind": "exploratory",
+      "intent": "Where does pytest record which tests failed so --lf can rerun them on the next invocation, and where is that data persisted?",
+      "pattern": "lastfailed",
+      "path": "src/_pytest",
+      "mode": "plain",
+      "referenceAnswer": "LFPlugin in src/_pytest/cacheprovider.py loads the dict from cache key 'cache/lastfailed' at startup; pytest_runtest_logreport adds failing nodeids and removes passing/skipped ones; pytest_sessionfinish persists the updated dict back with config.cache.set('cache/lastfailed', ...), stored under the .pytest_cache directory.",
+      "evidence": [
+        {
+          "path": "src/_pytest/cacheprovider.py",
+          "start": 250,
+          "end": 253,
+          "reason": "LFPlugin.__init__ loads self.lastfailed from config.cache.get('cache/lastfailed', {})."
+        },
+        {
+          "path": "src/_pytest/cacheprovider.py",
+          "start": 275,
+          "end": 279,
+          "reason": "pytest_runtest_logreport updates the lastfailed dict per test outcome."
+        },
+        {
+          "path": "src/_pytest/cacheprovider.py",
+          "start": 342,
+          "end": 350,
+          "reason": "pytest_sessionfinish writes the dict back via config.cache.set when it changed."
+        }
+      ]
+    },
+    {
+      "id": "pytest-assert-rewrite-choice",
+      "fixtureTaskId": "pytest-dev__pytest-7373",
+      "kind": "exploratory",
+      "intent": "How does pytest's import hook decide which modules get assertion rewriting applied?",
+      "pattern": "rewrite",
+      "path": "src/_pytest",
+      "mode": "plain",
+      "referenceAnswer": "AssertionRewritingHook._should_rewrite in src/_pytest/assertion/rewrite.py: it always rewrites conftest.py files, rewrites files that were specified on the command line (session initial paths), rewrites files matching the python_files test-naming glob patterns via fnmatch_ex, and otherwise falls back to modules explicitly registered through register_assert_rewrite (_is_marked_for_rewrite).",
+      "evidence": [
+        {
+          "path": "src/_pytest/assertion/rewrite.py",
+          "start": 211,
+          "end": 232,
+          "reason": "_should_rewrite: conftest, initial-path, python_files pattern, and marked-for-rewrite checks."
+        }
+      ]
+    },
+    {
+      "id": "sympy-simplify-measure",
+      "fixtureTaskId": "sympy__sympy-19007",
+      "kind": "exploratory",
+      "intent": "When simplify() transforms an expression, how does it judge whether the result is actually simpler, and what is the default complexity metric?",
+      "pattern": "measure",
+      "path": "sympy/simplify",
+      "mode": "plain",
+      "referenceAnswer": "simplify in sympy/simplify/simplify.py takes measure=count_ops as its default complexity metric and ratio=1.7; at the end it reverts to the original expression if measure(expr) > ratio*measure(original_expr), so a result is only kept when the metric says it did not get too much more complex.",
+      "evidence": [
+        {
+          "path": "sympy/simplify/simplify.py",
+          "start": 395,
+          "end": 395,
+          "reason": "simplify signature: defaults measure=count_ops, ratio=1.7."
+        },
+        {
+          "path": "sympy/simplify/simplify.py",
+          "start": 712,
+          "end": 713,
+          "reason": "Final ratio check reverting to original_expr when the measure grew beyond ratio."
+        }
+      ]
+    },
+    {
+      "id": "sympy-free-symbols",
+      "fixtureTaskId": "sympy__sympy-19007",
+      "kind": "exploratory",
+      "intent": "Where is free_symbols computed for a generic SymPy expression, and what is the base case for a plain Symbol?",
+      "pattern": "free_symbols",
+      "path": "sympy/core",
+      "mode": "plain",
+      "referenceAnswer": "Basic.free_symbols in sympy/core/basic.py is a property that returns the union of free_symbols over self.args (classes with bound variables like Integral override it); the recursion bottoms out at Symbol.free_symbols in sympy/core/symbol.py, which returns {self}.",
+      "evidence": [
+        {
+          "path": "sympy/core/basic.py",
+          "start": 513,
+          "end": 526,
+          "reason": "Basic.free_symbols property: set().union over args' free_symbols, with docstring on bound-variable exceptions."
+        },
+        {
+          "path": "sympy/core/symbol.py",
+          "start": 295,
+          "end": 297,
+          "reason": "Symbol.free_symbols base case returning {self}."
+        }
+      ]
+    },
+    {
+      "id": "sympy-parse-expr-ctrl",
+      "fixtureTaskId": "sympy__sympy-21379",
+      "kind": "control",
+      "intent": "Locate the definition of parse_expr, the function that converts a string into a SymPy expression.",
+      "pattern": "def parse_expr",
+      "mode": "plain",
+      "referenceAnswer": "parse_expr is defined in sympy/parsing/sympy_parser.py; it converts the string s into a SymPy expression using optional local_dict/global_dict namespaces and a tuple of token transformations (standard_transformations by default), with an evaluate flag.",
+      "evidence": [
+        {
+          "path": "sympy/parsing/sympy_parser.py",
+          "start": 915,
+          "end": 918,
+          "reason": "def parse_expr signature and opening docstring line describing string-to-expression conversion."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "gradingInstructions": [
+    "Grade semantic correctness against the pinned source, not exact wording or overlap with a reference answer. The source wins if a reference answer is incomplete.",
+    "For each required fact, record present=true or false and a short reason. Equivalent descriptions and accurate alternative source locations count. Do not require optional details listed in notes.",
+    "Assess citations separately. Concrete implementation claims must have repo-relative file and line citations that resolve to supporting source. A nearby line or a function's start is acceptable if it unambiguously identifies the supporting implementation. Do not demand one citation per sentence.",
+    "Set factualComplete only when every required fact is present and there is no material false claim. Set groundedComplete only when factualComplete and citations support the answer's key implementation claims.",
+    "Record materialErrors and citationErrors explicitly. Omitted optional context, wording differences, or a harmless extra explanation are not errors. Unsupported claims that contradict the pinned source are errors even if other facts are correct.",
+    "Use final answers only for correctness. Do not see arm, repetition, tool count, timing, cost, status, or earlier retrieval rankings. Inspect the pinned source when needed, never newer online documentation. Do not infer an arm from an answer.",
+    "An empty or unfinished answer is incomplete. Preserve partial fact credit. Report ambiguity rather than inventing evidence. All planned runs remain in the denominator."
+  ],
+  "queries": [
+    {
+      "queryId": "req-redirect-auth-strip",
+      "requiredFacts": [
+        {"id": "location", "fact": "Identifies SessionRedirectMixin.rebuild_auth in requests/sessions.py."},
+        {"id": "condition", "fact": "It compares the original request and redirected request hostnames and removes an existing Authorization header when they differ."}
+      ],
+      "acceptableEvidence": [{"path": "requests/sessions.py", "start": 187, "end": 208}],
+      "notes": ["Reapplying netrc credentials under trust_env is accurate but optional. Do not import newer Requests rules involving ports, schemes, or should_strip_auth into this older snapshot."]
+    },
+    {
+      "queryId": "req-redirect-limit",
+      "requiredFacts": [
+        {"id": "default", "fact": "The default redirect limit is 30, used by Session.max_redirects."},
+        {"id": "enforcement", "fact": "SessionRedirectMixin.resolve_redirects in requests/sessions.py raises TooManyRedirects when the redirect counter reaches self.max_redirects."}
+      ],
+      "acceptableEvidence": [{"path": "requests/models.py", "start": 47, "end": 47}, {"path": "requests/sessions.py", "start": 112, "end": 113}, {"path": "requests/sessions.py", "start": 331, "end": 334}],
+      "notes": ["A source comment explicitly stating the default can support 30; do not require an extra read of the constant definition. Describing it as a configurable per-session limit is optional."]
+    },
+    {
+      "queryId": "req-apparent-encoding-ctrl",
+      "requiredFacts": [
+        {"id": "definition", "fact": "Locates Response.apparent_encoding in requests/models.py."},
+        {"id": "library", "fact": "It uses chardet.detect on response content to obtain the encoding."}
+      ],
+      "acceptableEvidence": [{"path": "requests/models.py", "start": 648, "end": 651}],
+      "notes": ["No need to trace the bundled chardet import chain."]
+    },
+    {
+      "queryId": "pytest-collect-file-patterns",
+      "requiredFacts": [
+        {"id": "location", "fact": "Identifies pytest_collect_file in src/_pytest/python.py as the file-to-test-module collection gate."},
+        {"id": "gate", "fact": "The file must have a .py extension and either be an initial explicitly requested path or match the python_files patterns, with __init__.py also admitted by the non-initial path check."},
+        {"id": "matching", "fact": "Pattern matching uses glob/fnmatch semantics, not substring matching; successful files proceed to module collection."}
+      ],
+      "acceptableEvidence": [{"path": "src/_pytest/python.py", "start": 176, "end": 190}],
+      "notes": ["Default glob names and the exact pytest_pycollect_makemodule hook name are optional. Do not imply every admitted module contains tests or that an explicitly selected non-.py file bypasses the extension check."]
+    },
+    {
+      "queryId": "pytest-maxfail-stop",
+      "requiredFacts": [
+        {"id": "options", "fact": "Identifies the implementation in src/_pytest/main.py and explains that -x sets the same maxfail threshold to 1 while --maxfail supplies a number."},
+        {"id": "threshold", "fact": "Session.pytest_runtest_logreport counts failures and sets shouldfail when an enabled maxfail threshold is reached."},
+        {"id": "stop", "fact": "The run is actually stopped by a shouldfail check raising Session.Failed, for example in pytest_runtestloop or pytest_collectstart."}
+      ],
+      "acceptableEvidence": [{"path": "src/_pytest/main.py", "start": 56, "end": 72}, {"path": "src/_pytest/main.py", "start": 260, "end": 276}, {"path": "src/_pytest/main.py", "start": 426, "end": 440}],
+      "notes": ["Default zero disables the limit and expected-xfail failures are excluded. Both details are optional unless the answer makes a conflicting claim. Do not require the collection hook instead of the valid runtest-loop path."]
+    },
+    {
+      "queryId": "pytest-lastfailed-storage",
+      "requiredFacts": [
+        {"id": "owner", "fact": "Identifies LFPlugin in src/_pytest/cacheprovider.py and its lastfailed dictionary keyed by test node IDs."},
+        {"id": "update", "fact": "Failure reports add IDs and successful or skipped reports remove previously failed IDs."},
+        {"id": "persistence", "fact": "The dictionary is loaded and persisted using config.cache and the key cache/lastfailed; changed data is saved at session finish."},
+        {"id": "disk", "fact": "The cache is on disk under .pytest_cache by default, rather than only in process memory."}
+      ],
+      "acceptableEvidence": [{"path": "src/_pytest/cacheprovider.py", "start": 243, "end": 256}, {"path": "src/_pytest/cacheprovider.py", "start": 275, "end": 288}, {"path": "src/_pytest/cacheprovider.py", "start": 342, "end": 350}, {"path": "src/_pytest/cacheprovider.py", "start": 442, "end": 445}],
+      "notes": ["The directory is configurable by cache_dir and may be prefixed by TOX_ENV_DIR. Omitting that qualifier in a short answer about the default is not a failure; claiming the location is unchangeable is. Exact v/cache/lastfailed disk layout is optional."]
+    },
+    {
+      "queryId": "pytest-assert-rewrite-choice",
+      "requiredFacts": [
+        {"id": "location", "fact": "Identifies AssertionRewritingHook._should_rewrite in src/_pytest/assertion/rewrite.py."},
+        {"id": "conftest", "fact": "conftest.py files are selected for rewriting."},
+        {"id": "initial", "fact": "Explicit initial command-line file paths are selected."},
+        {"id": "patterns", "fact": "Files matching python_files test naming patterns are selected."},
+        {"id": "registered", "fact": "Otherwise explicitly registered modules can be selected through the marked-for-rewrite check/register_assert_rewrite."}
+      ],
+      "acceptableEvidence": [{"path": "src/_pytest/assertion/rewrite.py", "start": 59, "end": 64}, {"path": "src/_pytest/assertion/rewrite.py", "start": 211, "end": 247}],
+      "notes": ["Submodule details, early bail-out optimization, and PYTEST_DONT_REWRITE bypass are optional. A concise description of the four positive selection cases suffices; don't require import-loader internals."]
+    },
+    {
+      "queryId": "sympy-simplify-measure",
+      "requiredFacts": [
+        {"id": "metric", "fact": "simplify in sympy/simplify/simplify.py accepts a complexity measure, defaulting to count_ops (operation count)."},
+        {"id": "ratio", "fact": "The default ratio is 1.7. If the candidate measure exceeds ratio times the original measure, simplify reverts to the original expression."}
+      ],
+      "acceptableEvidence": [{"path": "sympy/simplify/simplify.py", "start": 395, "end": 395}, {"path": "sympy/simplify/simplify.py", "start": 712, "end": 713}],
+      "notes": ["Do not claim simplify always returns strictly fewer operations. Discussion of ranking intermediate alternatives or custom measures is optional."]
+    },
+    {
+      "queryId": "sympy-free-symbols",
+      "requiredFacts": [
+        {"id": "recursive", "fact": "Basic.free_symbols in sympy/core/basic.py computes the union of each argument's free_symbols."},
+        {"id": "base", "fact": "Symbol.free_symbols in sympy/core/symbol.py returns the singleton set {self}."}
+      ],
+      "acceptableEvidence": [{"path": "sympy/core/basic.py", "start": 513, "end": 526}, {"path": "sympy/core/symbol.py", "start": 295, "end": 297}],
+      "notes": ["Classes with bound variables may override the generic rule; examples are optional. A set of all syntactically occurring symbols is not equivalent for those classes."]
+    },
+    {
+      "queryId": "sympy-parse-expr-ctrl",
+      "requiredFacts": [
+        {"id": "definition", "fact": "Locates the public string-to-expression parse_expr definition in sympy/parsing/sympy_parser.py, not the separate ast_parser helper."}
+      ],
+      "acceptableEvidence": [{"path": "sympy/parsing/sympy_parser.py", "start": 915, "end": 918}],
+      "notes": ["Optional namespaces, transformations, and evaluate parameters are not required by the question."]
+    }
+  ]
+}
