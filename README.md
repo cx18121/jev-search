@@ -1,79 +1,82 @@
-# Jev search pilot
+# Jev search
 
-An isolated experiment that adds intent-based ordering to FFF's existing `ffgrep` tool. It is not installed in the daily Pi configuration. `fffind` is unchanged. There is no new competing search tool.
+Intent-based code search ranking for Pi, built on FFF.
 
-The pilot measures retrieval relevance separately from completed-task gains. Better ranking is useful for this trial even without a proven coding-speed improvement. Roughly two seconds of added search latency is acceptable.
+FFF finds matches. Jev reorders them based on what the agent is trying to find. The extension adds an `intent` argument to the existing `ffgrep` tool and leaves `fffind` unchanged.
 
-The [matched retrieval comparison](eval/retrieval/RESULTS.md) found useful evidence in the top five on all 8 exploratory searches with Jev, versus 4/8 with native ordering and 5/8 with the deterministic rule. Both Jev repetitions passed the predeclared ranking gate. All arms already exposed some useful evidence on the full first page.
+This is experimental. Small evaluations show better ranking, but do not establish faster coding or better task outcomes.
 
-The subsequent [60-run agent search-effort comparison](eval/effort/RESULTS.md) produced correct, source-grounded answers in every arm. On the exploratory questions, Jev used 31 follow-up calls versus native's 35 and deterministic's 40. The net saving versus native came entirely from one question, and elapsed time was essentially tied. Jev did not meet the predeclared effort threshold against native. Daily search remains unchanged. An opt-in one-session trial now lets us assess Jev's ranking in ordinary work.
+## Try it
 
-The earlier [30-run coding comparison](eval/coding/RESULTS.md) found identical fix success across arms. That tested end-to-end coding outcomes, not ranking quality in isolation. No additional experiment or rollout is automatic.
-
-## Standalone setup
+You need Node.js, npm, Pi, and a TypeSafe API key for Jev ranking.
 
 ```sh
+git clone https://github.com/cx18121/jev-search.git
+cd jev-search
 npm ci --ignore-scripts
 ```
 
-Make `TYPESAFE_API_KEY` available in your shell environment without committing it. From the project you want to search, start an isolated Pi session with the absolute path to this checkout:
+Make `TYPESAFE_API_KEY` available in your shell environment. From the project you want to search, launch Pi with the absolute path to this checkout:
 
 ```sh
-pi --no-extensions -e /path/to/jev-search/vendor/pi-fff/src/index.ts \
-  --model openai-codex/gpt-5.6-sol --thinking medium
+pi --no-extensions -e /path/to/jev-search/vendor/pi-fff/src/index.ts
 ```
 
-This disables other extensions for that session, including installed FFF, to avoid duplicate tool registrations. It does not edit Pi settings. The experiment summaries are included, but reproducing historical campaigns also requires their local source archives, Docker images and ignored artifacts. This repository is not a self-contained benchmark distribution.
+This loads only the search extension for that session. It does not edit Pi settings. Do not load it alongside another FFF extension, since both register `ffgrep` and `fffind`.
 
-Third-party code retains its upstream licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
+**Search intent and candidate code snippets are sent to the TypeSafe API.** Use it only with code you are allowed to send to that service. Keep credentials out of the repository.
 
-## Personal one-session trial
+## Usage
 
-Charlie's separate `pi-personal` checkout provides a launcher that preserves other enabled extensions. From the project you want to work on:
+The agent supplies a search pattern and a description of the code it needs. For example, an `ffgrep` call could use:
 
-```sh
-node ~/Projects/personal/pi-personal/scripts/jev-trial.mjs \
-  --env-file ~/Projects/personal/jev-context/.env
+```json
+{
+  "pattern": "fallback",
+  "path": "src/",
+  "intent": "Find how a failed ranking returns the original search order"
+}
 ```
 
-This launches Sol on medium with Jev-backed FFF and the other enabled extensions. It does not change daily settings. The model-remembering extension is omitted for this session. The env file supplies only `TYPESAFE_API_KEY`. Search intent and candidate snippets are sent to Jev, so choose an appropriate repository. Exit and launch ordinary `pi` to return to stock search.
+The pattern controls which matches FFF retrieves. The intent controls their ranking. Jev cannot recover code that the pattern did not match.
 
-Trial usage and limits are in `pi-personal/scripts/jev-trial.md` in that separate checkout. The launcher is not bundled in this repository. Historical benchmark protocols are unchanged.
+Results retain file paths, line numbers, and source text. Low-scoring matches are not discarded. Continuation cursors expose the rest of the pool before retrieving more matches. Continuations keep the same search arguments and may omit `intent`.
 
-## Implementation
+## Behavior and limits
 
-- `vendor/pi-fff/src/` contains `@ff-labs/pi-fff` 0.11.0. Only `index.ts` is patched. The upstream manifest and MIT license are beside it.
-- `src/rank.ts` orders plain candidates without depending on FFF.
-- `src/grep-pilot.ts` collects candidate pools, formats snippets and manages continuation cursors.
-- `eval/` holds the initial controlled navigation probe.
-- `eval/coding/` holds the isolated five-task, three-arm, two-repetition coding experiment. It is not proof of general coding gains.
-- `eval/retrieval/` holds the matched-pool ordering experiment, blind relevance labels and frozen decision protocol.
-- `eval/effort/` holds the read-only code-question comparison, frozen answer rubric and search-effort results.
+- Each pool contains up to 80 matches. Ranking is within that pool, not across the whole repository.
+- Output is capped at 12,000 UTF-8 bytes per page and 3,500 bytes per snippet. Truncation is marked. FFF also limits matches to 200 per file.
+- Missing credentials, invalid responses, or provider failures return the original pool order with a notice. Ranking has a 20-second deadline and no retries.
+- The ranker uses `jev-1.13.0`, with up to eight candidates per request. Tool metadata includes ranking latency, reported token usage, and fallback status.
 
-Fresh `ffgrep` calls need both `pattern` and `intent`. A continuation keeps the same search arguments and may omit intent. Each search collects up to 80 matches for ordering, using at most three native scan pages per pool. It does not rank every repository match. Native soft-limit overflow is held for the next pool rather than discarded.
+`JEV_SEARCH_ORDER` selects `jev` (default), `native`, or `deterministic`. Native preserves FFF's pool order. Deterministic puts definitions first, then favors different files. All modes share the same retrieval and output limits.
 
-All collected candidates remain reachable, regardless of score. A cursor drains the ordered pool before collecting more. Output is capped at 12,000 UTF-8 bytes and each snippet at 3,500 bytes. Truncation is marked. Snippets keep their paths, line numbers and whitespace. FFF itself limits matches to 200 per file and may truncate long lines. No claim of complete repository coverage is made.
+## Results
 
-`JEV_SEARCH_ORDER` selects `native`, `deterministic`, or `jev` (default). All three use the same interface, candidate collection and output limits. The deterministic arm puts definitions first, then favors different files. The native arm preserves FFF order within the expanded pool. **It is not a comparison against the entire unmodified stock FFF tool.**
+In a [matched-pool evaluation](eval/retrieval/RESULTS.md) of eight exploratory searches, useful evidence appeared in the top five for:
 
-Jev uses pinned model `jev-1.13.0`, independent Noul questions per candidate and groups of up to eight candidates. Requests stay under 24,000 serialized UTF-8 bytes. Groups share the search intent and candidate text, so batch scoring remains an empirical choice rather than an assumed equivalent of single-candidate scoring. `JEV_SEARCH_BATCH_SIZE=1` enables that comparison.
+| Ordering | Searches with useful evidence in the top five |
+| --- | --- |
+| Native | 4/8 |
+| Deterministic | 5/8 |
+| Jev | 8/8 in both repetitions |
 
-A ranking attempt has a 20-second deadline and no retries. Missing credentials, invalid responses and provider failures return the original pool order with an explicit notice. Cancellation remains cancellation. Tool metadata records API calls, reported tokens, ranking latency, fallback and pool coverage. A failed request may incur provider usage that was not returned and therefore cannot be counted locally.
+Every ordering already exposed some useful evidence on the full first page. These were curated queries with fixed candidate pools, not a comparison against the entire unmodified FFF tool.
 
-## Checks
+A [60-run agent comparison](eval/effort/RESULTS.md) produced correct answers in every ordering. Jev modestly reduced follow-up calls, but the net saving over native came from one question and elapsed time was essentially tied. An earlier [coding comparison](eval/coding/RESULTS.md) found identical fix success across orderings.
+
+The evidence supports improved ranking on this sample, not a general productivity claim. Historical campaigns require local source archives, Docker images, and ignored artifacts that are not bundled here.
+
+## Development
 
 ```sh
-npm ci --ignore-scripts
 npm test
 npm run typecheck
 ```
 
-The focused tests cover stable ordering, retention of low scores, response validation, fallback, cancellation, byte limits, request packing and cursor pagination. The evaluation harness also exercises the real extension without a model call before a live run.
+- [`src/rank.ts`](src/rank.ts) handles scoring and fallback without depending on FFF.
+- [`src/grep-pilot.ts`](src/grep-pilot.ts) handles candidate pools, snippets, and pagination.
+- [`vendor/pi-fff/`](vendor/pi-fff/) contains FFF 0.11.0 with a patched `src/index.ts`.
+- [`eval/`](eval/) contains evaluation harnesses, protocols, and reports.
 
-See `eval/README.md` for the frozen tasks, controls and live command. Results stay under ignored `results/`. Keep credentials out of the repository and the source snapshots. Do not load this extension alongside installed FFF because both register `ffgrep` and `fffind`.
-
-## Evidence boundary
-
-The pilot must establish basic retrieval correctness before spending on model runs. A small navigation comparison can reject a slow or ineffective approach, but cannot establish a general productivity gain. Do not activate it globally on the strength of a few passing tasks.
-
-API contracts used here are documented in the [System One API](https://docs.typesafe.ai/api.md), [models](https://docs.typesafe.ai/models.md) and [reranking cookbook](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md). The published Jev 1.13 input price is $0.042 per million tokens, with free output tokens. Coding-agent inference is separate.
+The API integration follows the [System One API](https://docs.typesafe.ai/api.md) and [reranking cookbook](https://docs.typesafe.ai/cookbooks/rerank_typesafe.md). Vendored code retains its upstream licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
